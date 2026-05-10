@@ -1,0 +1,75 @@
+{
+   "images" : [
+      {
+         "acces" : "P",
+         "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Test/shu2.jpg",
+         "cout" : 1000,
+         "dateAjout" : "28/12/2021",
+         "dateCreation" : "15/10/2017",
+         "numero" : 5,
+         "source" : "Admin",
+         "titre" : "Meteo Toulouse"
+      },
+      {
+         "acces" : "R",
+         "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Test/pcb1.jpg",
+         "cout" : 500,
+         "dateAjout" : "27/12/2021",
+         "dateCreation" : "19/02/2020",
+         "numero" : 4,
+         "source" : "Admin",
+         "titre" : "Beluga"
+      },
+      {
+         "acces" : "R",
+         "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Test/tstnb2.jpg",
+         "cout" : 100,
+         "dateAjout" : "20/01/2022",
+         "dateCreation" : "07/08/2021",
+         "numero" : 2,
+         "source" : "Admin",
+         "titre" : "Testcard lite"
+      },
+      {
+         "acces" : "P",
+         "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Test/hse3.jpg",
+         "cout" : 0,
+         "dateAjout" : "26/12/2021",
+         "dateCreation" : "28/10/2021",
+         "numero" : 3,
+         "source" : "Admin",
+         "titre" : "New AIP"
+      },
+      {
+         "acces" : "R",
+         "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Test/tst1.jpg",
+         "cout" : 0,
+         "dateAjout" : "04/02/2022",
+         "dateCreation" : "08/10/2003",
+         "numero" : 6,
+         "source" : "Wikipedia",
+         "titre" : "Testcard 1"
+      },
+      {
+         "acces" : "P",
+         "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Test/tstnb.jpg",
+         "cout" : 10,
+         "dateAjout" : "23/01/2022",
+         "dateCreation" : "08/10/2003",
+         "numero" : 1,
+         "source" : "Wikipedia",
+         "titre" : "Testcard 2"
+      },
+      {
+         "acces" : "P",
+         "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Test/galaxy.jpg",
+         "cout" : 100000,
+         "dateAjout" : "23/01/2022",
+         "dateCreation" : "12/01/2018",
+         "numero" : 7,
+         "source" : "Collins Dictionary",
+         "titre" : "Galaxy"
+      }
+   ],
+   "nbImages" : 7
+}

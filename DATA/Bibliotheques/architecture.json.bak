@@ -1,0 +1,55 @@
+{
+   "images" : [
+      {
+         "acces" : "P",
+         "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Architecture/wal2.png",
+         "cout" : 1000,
+         "dateAjout" : "24/12/2021",
+         "dateCreation" : "08/10/2003",
+         "numero" : 1,
+         "source" : "HIPR",
+         "titre" : "Modern office building"
+      },
+     {
+        "acces" : "P",
+        "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Architecture/wal1.png",
+        "cout" : 1000,
+        "dateAjout" : "24/12/2021",
+        "dateCreation" : "08/10/2003",
+        "numero" : 2,
+        "source" : "HIPR",
+        "titre" : "Period office building"
+     },
+     {
+        "acces" : "P",
+        "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Architecture/cam1.png",
+        "cout" : 1000,
+        "dateAjout" : "24/12/2021",
+        "dateCreation" : "08/10/2003",
+        "numero" : 3,
+        "source" : "HIPR",
+        "titre" : "Man with camera"
+     },
+     {
+        "acces" : "P",
+        "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Architecture/sfc1.png",
+        "cout" : 1000,
+        "dateAjout" : "24/12/2021",
+        "dateCreation" : "08/10/2003",
+        "numero" : 4,
+        "source" : "HIPR",
+        "titre" : "City center financial district"
+     },
+     {
+      "acces" : "P",
+      "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Architecture/bld1.png",
+      "cout" : 1000,
+      "dateAjout" : "24/12/2021",
+      "dateCreation" : "08/10/2003",
+      "numero" : 5,
+      "source" : "HIPR",
+      "titre" : "Scott Monument"
+   }
+   ],
+   "nbImages" : 5
+}

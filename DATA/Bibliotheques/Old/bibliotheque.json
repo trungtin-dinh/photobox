@@ -1,0 +1,25 @@
+{
+   "images" : [
+      {
+         "acces" : "P",
+         "cheminAcces" : "./DATA/Images/dangerous_dance.png",
+         "cout" : 1000,
+         "dateAjout" : "18/12/2021",
+         "dateCreation" : "08/10/2021",
+         "numero" : 1,
+         "source" : "Nasa",
+         "titre" : "dangerous dance"
+      },
+      {
+         "acces" : "P",
+         "cheminAcces" : "./DATA/Images/halloween_sun.png",
+         "cout" : 9.8999996185302734,
+         "dateAjout" : "18/12/2021",
+         "dateCreation" : "08/10/2004",
+         "numero" : 2,
+         "source" : "Nasa",
+         "titre" : "halloween sun"
+      }
+   ],
+   "nbImages" : 2
+}

@@ -174,17 +174,13 @@ Mat ImageVividite(const Mat image, const int valeur){
     int val ;                                   // Valeur de calcul intermediaire
     Mat imageResultante ;                       // Image resultante
     Mat imageComposante[3] ;                    // Composantes de l'image originale
-    vector<int> vectVal(3) ;                    // Vecteur des valeurs a ajouter dans les composantes
-    vector<int> intervalle(3) ;                 // Intervalle d'intensite de l'histogramme des composantes
+    vector<int> vectVal(3, 0) ;                 // Vecteur des valeurs a ajouter dans les composantes
+    vector<int> intervalle ;                    // Intervalle d'intensite de l'histogramme des composantes
     vector<Mat> imageResultanteComposante ;     // Composante de l'image resultante
 
     // Initialisation
-    imageResultanteComposante.clear() ;
-    vectVal.clear() ;
-    intervalle.clear() ;
-    vectVal[0] = 0 ;
-    vectVal[1] = 0 ;
-    vectVal[2] = 0 ;
+    intervalle.reserve(3) ;
+    imageResultanteComposante.reserve(3) ;
 
     //  Decomposition des composantes de couleur
     split(image, imageComposante) ;
@@ -2068,34 +2064,22 @@ int MatriceMedian(const Mat matrice){
 
 // Determiner la valeur mediane d'un vecteur
 int VecteurMedian(vector<int> vecteur){
-    // Declaration des variables
-    int c ;                                 // Indice
-    vector<int> vecteurDecroissant ;        // Vecteur des valeurs rangees dans l'ordre decroissant
-
-    // Initialisation
-    vecteurDecroissant.clear() ;
-
-    // Ranger les valeurs du vecteur de depart dans l'ordre decroissant
-    while(vecteur.size()){
-        // Ecrire la valeur maximum du vecteur de depart
-        vecteurDecroissant.push_back(MaxVecteur(vecteur)) ;
-        for(c = 0 ; c < (int)vecteur.size() ; c++){
-            // Supprimer la valeur ecrite
-            if(MaxVecteur(vecteur) == vecteur[c]){
-                vecteur.erase(vecteur.begin() + c) ;
-            }
-        }
+    if(vecteur.empty()){
+        return 0 ;
     }
 
+    const size_t medianIndex = vecteur.size()/2 ;
+    nth_element(vecteur.begin(), vecteur.begin() + medianIndex, vecteur.end()) ;
+
     // Retour
-    return vecteurDecroissant[ceil((double)vecteurDecroissant.size()/2)] ;
+    return vecteur[medianIndex] ;
 }
 
 // Verifier l'egalite entre deux matrices de memes dimensions
 bool MatriceEgale(const Mat matrice1, const Mat matrice2){
     // Declaration des variables
     int ligne, colonne ;        // Indices
-    bool egal ;                 // Egalite entre deux matrices
+    bool egal = true ;          // Egalite entre deux matrices
 
     // Verification de l'egalite de toutes les valeurs dans les deux matrices
     for(ligne = 0 ; ligne < (int)matrice1.size().height ; ligne++){
@@ -2736,16 +2720,15 @@ Mat TransformeedeHough(const Mat image,int num_theta,int threshold_acc){
     double edge_height_half, edge_width_half;
 
     double dtheta;
-    double *thetas;
     int theta_idx;
 
     double rho;
     int rho_idx;
+
+
     int Max_rho;
     int Maxrho_idx; //index maximal de rho
 
-    double* cos_theta;
-    double* sin_theta;
     double deg2rad;
     // défini le nombre de point pour discrétiser les rho et théta
     //int num_theta =180;
@@ -2758,10 +2741,10 @@ Mat TransformeedeHough(const Mat image,int num_theta,int threshold_acc){
 
     image.copyTo(imageHough);
 
-    //Allocation dynamique
-    cos_theta = new double[num_theta];
-    sin_theta = new double [num_theta];
-    thetas = new double [num_theta];
+    // Tables de sinus/cosinus pre-calculees
+    vector<double> cos_theta(num_theta) ;
+    vector<double> sin_theta(num_theta) ;
+    vector<double> thetas(num_theta) ;
 
     // Mettre l'image en niveau de gris
     gray_image = ImageMonochrome(image);
@@ -2795,8 +2778,8 @@ Mat TransformeedeHough(const Mat image,int num_theta,int threshold_acc){
     }
 
 
-    //Création de l'accumulateur and initialiser à ZEro
-    accumulateur = Mat::zeros(Maxrho_idx,num_theta,CV_8U);
+    // Creation de l'accumulateur. CV_32S evite les saturations a 255 votes.
+    accumulateur = Mat::zeros(Maxrho_idx,num_theta,CV_32S);
 
     // Calcul dans l'espace de Hough
     for (ligne = 0;ligne < edge_height; ligne ++){
@@ -2811,7 +2794,7 @@ Mat TransformeedeHough(const Mat image,int num_theta,int threshold_acc){
                     rho_idx = round(rho)+Max_rho;
                     //cout << "valeur de rho" << rho<< "valeur de lindex "<< rho_idx<< endl;
                     //cout << index_Rho << endl;
-                    accumulateur.at<unsigned char>(rho_idx,theta_idx)++;
+                    accumulateur.at<int>(rho_idx,theta_idx)++;
 
                 }
             }
@@ -2822,7 +2805,7 @@ Mat TransformeedeHough(const Mat image,int num_theta,int threshold_acc){
     //Tracage ds droite détecter à partir de l'accumulateur
     for (ligne = 0;ligne < accumulateur.rows; ligne ++){
         for(colonne = 0; colonne < accumulateur.cols; colonne ++){
-            if(accumulateur.at<unsigned char>(ligne,colonne) > (threshold_acc)){
+            if(accumulateur.at<int>(ligne,colonne) > (threshold_acc)){
 
                 //y = (r - x cos(t)) / sin(t)
                 if(thetas[colonne] >= 45 && thetas[colonne] <= 135){
@@ -2849,11 +2832,6 @@ Mat TransformeedeHough(const Mat image,int num_theta,int threshold_acc){
         }
 
     }
-
-    //liberation de la mémoire
-    delete[] cos_theta;
-    delete[] sin_theta;
-    delete[] thetas;
 
     //cout << accumulateur << endl;
 

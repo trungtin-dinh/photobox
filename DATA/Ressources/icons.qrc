@@ -1,0 +1,19 @@
+<!DOCTYPE RCC><RCC version="1.0">
+ <qresource>
+     <file>icons/zoom.png</file>
+     <file>icons/galaxy.jpeg</file>
+     <file>icons/exempleMono.jpeg</file>
+     <file>icons/exempleSepia.jpeg</file>
+     <file>icons/exempleNeg.jpeg</file>
+     <file>icons/exempleR.jpeg</file>
+     <file>icons/exempleV.jpeg</file>
+     <file>icons/exempleB.jpeg</file>
+     <file>icons/exempleJ.jpeg</file>
+     <file>icons/exempleC.jpeg</file>
+     <file>icons/exempleM.jpeg</file>
+     <file>icons/exempleRGB.jpeg</file>
+     <file>icons/exemplePeS.jpeg</file>
+     <file>icons/exempleEgalisation.jpeg</file>
+     <file>icons/agrandir.png</file>
+ </qresource>
+ </RCC>

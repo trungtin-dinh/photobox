@@ -6,7 +6,7 @@ Bibliotheque::Bibliotheque(){
 }
 
 // Constructeur avec le nom de la bibliotheque donnee par l'utilisateur
-Bibliotheque::Bibliotheque(string nom){
+Bibliotheque::Bibliotheque(const string& nom){
     // Declaration des variables
     Json::Reader reader ;                       // Variable pour lire un fichie Json
 
@@ -17,29 +17,29 @@ Bibliotheque::Bibliotheque(string nom){
 }                               
 
 // Constructeur avec un objet Json
-Bibliotheque::Bibliotheque(const Json::Value bibliotheque){
+Bibliotheque::Bibliotheque(const Json::Value& bibliotheque){
     setBilbiotheque(bibliotheque) ;
 }
 
 /*Getters*/
 // Bibliotheque
-Json::Value Bibliotheque::getBilbiotheque() const{
+const Json::Value& Bibliotheque::getBilbiotheque() const{
     return _bibliotheque ;
 }
 
 // Chemin Json
-string Bibliotheque::getCheminJson() const {
+const string& Bibliotheque::getCheminJson() const {
     return _cheminJson; 
 }
 
 /*Setters*/
 // Bibliohteque
-void Bibliotheque::setBilbiotheque(const Json::Value bibliotheque){
+void Bibliotheque::setBilbiotheque(const Json::Value& bibliotheque){
     _bibliotheque = bibliotheque ;
 }
 
 // Chemin Json
-void Bibliotheque::setCheminJson(const string cheminJson){
+void Bibliotheque::setCheminJson(const string& cheminJson){
     _cheminJson = cheminJson ;
 }
 
@@ -513,39 +513,12 @@ vector<int> Bibliotheque::Trier(vector<double>valeurNonTri){
 
 // Determiner les indices des elements avant le tri (chaine de caractères)
 vector<int> Bibliotheque::Trier(vector<string>valeurNonTri){
-    // Declaration des variables
-    int c, k ;                      // Indices
-    vector<string> valeurTri ;      // Vecteur des valeurs triees
-    vector<int> indice ;            // Vecteur des indices pour le tri de la bibliotheque
+    vector<int> indice(valeurNonTri.size()) ;
+    iota(indice.begin(), indice.end(), 0) ;
 
-    // Initialisation
-    indice.clear() ;
-    valeurTri.clear() ;
-
-    // Initialiser le vecteur des titres tries 
-    valeurTri = valeurNonTri ;     
-             
-    // Trier les titres dans l'ordre decroissant
-    sort(valeurTri.begin(), valeurTri.end(), greater<string>()) ; 
-
-    // Initialiser la premiere valeur du vecteur des indices du tri par l'indice du cout maximum
-    for (c = 0 ; c < (int)valeurTri.size() ; c++){
-        if(valeurNonTri[c] == valeurTri[0]){
-            indice.push_back(c) ;
-            break ;
-        }
-    }
-
-    // Remplir le vecteur des indice du tri
-    for (c = 0 ; c < (int)valeurTri.size() ; c++){                      // Pour chaque element du vecteur des indices du vecteur des couts trie
-        for (k = 0 ; k < (int)valeurTri.size() ; k++){                  // Pour chaque element du vecteur des indices du vecteur des couts non trie
-            if ((valeurTri[c] == valeurNonTri[k])){                     // Si on retrouve le meme cout dans le vecteur trie que dans le vecteur non trie     
-                if ((*find(indice.begin(), indice.end(), k)) != k){     // Si l'indice correspondant n'est pas encore ecrit dans le vecteur des indices de tri                         
-                    indice.push_back(k) ;                               // Ajouter cet indice
-                }
-            }
-        }
-    }    
+    stable_sort(indice.begin(), indice.end(), [&valeurNonTri](int a, int b){
+        return valeurNonTri[a] > valeurNonTri[b] ;
+    }) ;
 
     // Retour
     return indice ;

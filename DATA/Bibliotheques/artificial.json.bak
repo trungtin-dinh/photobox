@@ -1,0 +1,175 @@
+{
+   "images" : [
+      {
+         "acces" : "P",
+         "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Artificial/cir3.png",
+         "cout" : 1000,
+         "dateAjout" : "24/12/2021",
+         "dateCreation" : "08/10/2003",
+         "numero" : 1,
+         "source" : "HIPR",
+         "titre" : "Circle centered in the left of the image"
+      },
+      {
+        "acces" : "P",
+        "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Artificial/che1.png",
+        "cout" : 1000,
+        "dateAjout" : "24/12/2021",
+        "dateCreation" : "08/10/2003",
+        "numero" : 2,
+        "source" : "HIPR",
+        "titre" : "Chess board"
+     },
+     {
+        "acces" : "P",
+        "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Artificial/che1noi1.png",
+        "cout" : 1000,
+        "dateAjout" : "24/12/2021",
+        "dateCreation" : "08/10/2003",
+        "numero" : 3,
+        "source" : "HIPR",
+        "titre" : "Chess board with salt and pepper noise"
+     },
+     {
+        "acces" : "P",
+        "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Artificial/che1noi2.png",
+        "cout" : 1000,
+        "dateAjout" : "24/12/2021",
+        "dateCreation" : "08/10/2003",
+        "numero" : 4,
+        "source" : "HIPR",
+        "titre" : "Chess board with gaussian noise"
+     },
+     {
+        "acces" : "P",
+        "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Artificial/art9.png",
+        "cout" : 1000,
+        "dateAjout" : "24/12/2021",
+        "dateCreation" : "08/10/2003",
+        "numero" : 5,
+        "source" : "HIPR",
+        "titre" : "Propeller shaped object"
+     },
+     {
+        "acces" : "P",
+        "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Artificial/art8.png",
+        "cout" : 1000,
+        "dateAjout" : "24/12/2021",
+        "dateCreation" : "08/10/2003",
+        "numero" : 6,
+        "source" : "HIPR",
+        "titre" : "Multiple crosses"
+     },
+     {
+        "acces" : "P",
+        "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Artificial/art8lab2.png",
+        "cout" : 1000,
+        "dateAjout" : "24/12/2021",
+        "dateCreation" : "08/10/2003",
+        "numero" : 7,
+        "source" : "HIPR",
+        "titre" : "Multiple crosses in colors"
+     },
+     {
+        "acces" : "P",
+        "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Artificial/art7.png",
+        "cout" : 1000,
+        "dateAjout" : "24/12/2021",
+        "dateCreation" : "08/10/2003",
+        "numero" : 8,
+        "source" : "HIPR",
+        "titre" : "Skewed doughnut shaped object"
+     },
+     {
+        "acces" : "P",
+        "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Artificial/art6.png",
+        "cout" : 1000,
+        "dateAjout" : "24/12/2021",
+        "dateCreation" : "08/10/2003",
+        "numero" : 9,
+        "source" : "HIPR",
+        "titre" : "Rounded, elongated object"
+     },
+     {
+        "acces" : "P",
+        "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Artificial/art5.png",
+        "cout" : 1000,
+        "dateAjout" : "24/12/2021",
+        "dateCreation" : "08/10/2003",
+        "numero" : 10,
+        "source" : "HIPR",
+        "titre" : "Rectangle"
+     },
+     {
+        "acces" : "P",
+        "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Artificial/art4.png",
+        "cout" : 1000,
+        "dateAjout" : "24/12/2021",
+        "dateCreation" : "08/10/2003",
+        "numero" : 11,
+        "source" : "HIPR",
+        "titre" : "Circle filled with holes"
+     },
+     {
+        "acces" : "P",
+        "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Artificial/art3.png",
+        "cout" : 1000,
+        "dateAjout" : "24/12/2021",
+        "dateCreation" : "08/10/2003",
+        "numero" : 12,
+        "source" : "HIPR",
+        "titre" : "Circles and lines"
+     },
+     {
+        "acces" : "P",
+        "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Artificial/art2.png",
+        "cout" : 1000,
+        "dateAjout" : "24/12/2021",
+        "dateCreation" : "08/10/2003",
+        "numero" : 13,
+        "source" : "HIPR",
+        "titre" : "Cris-cross lines"
+     },
+     {
+        "acces" : "P",
+        "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Artificial/art1.png",
+        "cout" : 1000,
+        "dateAjout" : "24/12/2021",
+        "dateCreation" : "08/10/2003",
+        "numero" : 14,
+        "source" : "HIPR",
+        "titre" : "Circles and lines"
+     },
+     {
+        "acces" : "P",
+        "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Artificial/sqr1.png",
+        "cout" : 1000,
+        "dateAjout" : "24/12/2021",
+        "dateCreation" : "08/10/2003",
+        "numero" : 15,
+        "source" : "HIPR",
+        "titre" : "Occluding squares"
+     },
+     {
+        "acces" : "P",
+        "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Artificial/reg1.png",
+        "cout" : 1000,
+        "dateAjout" : "24/12/2021",
+        "dateCreation" : "08/10/2003",
+        "numero" : 16,
+        "source" : "HIPR",
+        "titre" : "Artificial boundary"
+     },
+     {
+        "acces" : "P",
+        "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Artificial/rlf1.png",
+        "cout" : 1000,
+        "dateAjout" : "24/12/2021",
+        "dateCreation" : "08/10/2003",
+        "numero" : 17,
+        "source" : "HIPR",
+        "titre" : "Triangle, hexagon and squares"
+     }
+   ],
+   "nbImages" : 17
+}

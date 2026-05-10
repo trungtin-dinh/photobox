@@ -1,0 +1,66 @@
+{
+    "images" : [
+       {
+          "acces" : "P",
+          "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Test/brd2.png",
+          "cout" : 0,
+          "dateAjout" : "23/01/2022",
+          "dateCreation" : "12/01/2018",
+          "numero" : 1,
+          "source" : "Agrael",
+          "titre" : "Circuit board"
+       },
+       {
+         "acces" : "R",
+         "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Test/hse2.png",
+         "cout" : 10,
+         "dateAjout" : "20/01/2022",
+         "dateCreation" : "21/12/2015",
+         "numero" : 2,
+         "source" : "Agrael",
+         "titre" : "Domestic cat"
+      },
+      {
+         "acces" : "P",
+         "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Test/hse3.png",
+         "cout" : 100,
+         "dateAjout" : "26/12/2021",
+         "dateCreation" : "28/10/2021",
+         "numero" : 3,
+         "source" : "Agrael",
+         "titre" : "AIP"
+      },
+      {
+         "acces" : "R",
+         "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Test/pcb1.png",
+         "cout" : 1000,
+         "dateAjout" : "27/12/2021",
+         "dateCreation" : "19/02/2020",
+         "numero" : 4,
+         "source" : "Agrael",
+         "titre" : "Beluga"
+      },
+      {
+         "acces" : "P",
+         "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Test/shu2.png",
+         "cout" : 10000,
+         "dateAjout" : "28/12/2021",
+         "dateCreation" : "15/10/2017",
+         "numero" : 5,
+         "source" : "CdE",
+         "titre" : "Cite de l'espace"
+      },
+      {
+         "acces" : "R",
+         "cheminAcces" : "/home/vm/M2SIA-projet-QT/DATA/Images/Test/tst1.png",
+         "cout" : 100000,
+         "dateAjout" : "04/02/2022",
+         "dateCreation" : "08/10/2003",
+         "numero" : 6,
+         "source" : "HIPR2",
+         "titre" : "Testcard 1"
+      }
+    ],
+    "nbImages" : 6
+ }
+ 
