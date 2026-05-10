@@ -2851,9 +2851,9 @@ Mat TransformeedeHough(const Mat image,int num_theta,int threshold_acc){
     }
 
     //liberation de la mémoire
-    delete (cos_theta);
-    delete (sin_theta);
-    delete (thetas);
+    delete[] cos_theta;
+    delete[] sin_theta;
+    delete[] thetas;
 
     //cout << accumulateur << endl;
 

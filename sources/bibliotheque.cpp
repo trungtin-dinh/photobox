@@ -481,7 +481,7 @@ vector<int> Bibliotheque::Trier(vector<double>valeurNonTri){
     indice.clear() ;
     valeurTri.clear() ;
 
-    sortIdx(valeurNonTri, indice, CV_SORT_DESCENDING) ;
+    cv::sortIdx(valeurNonTri, indice, cv::SORT_DESCENDING) ;
     /* // Initialiser le vecteur des titres tries
     valeurTri = valeurNonTri ;     
 
@@ -561,7 +561,7 @@ vector<int> Bibliotheque::Trier(vector<int>valeurNonTri){
     indice.clear() ;
     valeurTri.clear() ;
 
-    sortIdx(valeurNonTri, indice, CV_SORT_DESCENDING) ;
+    cv::sortIdx(valeurNonTri, indice, cv::SORT_DESCENDING) ;
 /*    // Initialiser le vecteur des titres tries
     valeurTri = valeurNonTri ;     
 

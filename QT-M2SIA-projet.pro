@@ -8,6 +8,12 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
+CONFIG += c++11
+CONFIG += link_pkgconfig
+PKGCONFIG += opencv4
+CONFIG += link_pkgconfig
+PKGCONFIG += jsoncpp
+
 TARGET = Photobox-beta
 TEMPLATE = app
 
@@ -24,18 +30,18 @@ DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs depr
 
 
 SOURCES += \
-        /home/vm/M2SIA-projet-QT/sources/main.cpp \
-        /home/vm/M2SIA-projet-QT/sources/mainwindow.cpp \
-        /home/vm/M2SIA-projet-QT/sources/bibliotheque.cpp \
-        /home/vm/M2SIA-projet-QT/sources/ImageToolBox.cpp
+        ./sources/main.cpp \
+        ./sources/mainwindow.cpp \
+        ./sources/bibliotheque.cpp \
+        ./sources/ImageToolBox.cpp
 
 HEADERS += \
-        /home/vm/M2SIA-projet-QT/headers/mainwindow.h \
-        /home/vm/M2SIA-projet-QT/headers/bibliotheque.h \
-        /home/vm/M2SIA-projet-QT/headers/ImageToolBox.h \
+        ./headers/mainwindow.h \
+        ./headers/bibliotheque.h \
+        ./headers/ImageToolBox.h \
 
 FORMS += \
-        /home/vm/M2SIA-projet-QT/ui/mainwindow.ui \
+        ./ui/mainwindow.ui \
 
 
 LIBS += \
@@ -43,8 +49,8 @@ LIBS += \
         -I/opencv2/include/ -lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lopencv_videoio
 
 RESOURCES += \
-    /home/vm/DATA/Ressources/icons.qrc \
-    /home/vm/DATA/Ressources/files.qrc
+    ./DATA/Ressources/icons.qrc \
+    ./DATA/Ressources/files.qrc
 
 
 
