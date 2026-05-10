@@ -1,0 +1,453 @@
+\hypertarget{classBibliotheque}{}\section{Référence de la classe Bibliotheque}
+\label{classBibliotheque}\index{Bibliotheque@{Bibliotheque}}
+
+
+La classe \hyperlink{classBibliotheque}{Bibliotheque} permet la gestion d\textquotesingle{}une bibliotheque d\textquotesingle{}images.  
+
+
+
+
+{\ttfamily \#include $<$bibliotheque.\+h$>$}
+
+\subsection*{Fonctions membres publiques}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classBibliotheque_a2b1ff298331a04c425926881e5f5ea49}\label{classBibliotheque_a2b1ff298331a04c425926881e5f5ea49}} 
+\hyperlink{classBibliotheque_a2b1ff298331a04c425926881e5f5ea49}{Bibliotheque} ()
+\begin{DoxyCompactList}\small\item\em Construire un nouveau objet \hyperlink{classBibliotheque}{Bibliotheque} vide. \end{DoxyCompactList}\item 
+\hyperlink{classBibliotheque_ac18f721f99ed6699547099e554af08fe}{Bibliotheque} (string nom\+Bibliotheque)
+\begin{DoxyCompactList}\small\item\em Construire un nouveau objet \hyperlink{classBibliotheque}{Bibliotheque} avec le nom de la bibliotheque. \end{DoxyCompactList}\item 
+\hyperlink{classBibliotheque_abeef5fed51f37a993d77ba5af478051c}{Bibliotheque} (const Json\+::\+Value json\+Bibliotheque)
+\begin{DoxyCompactList}\small\item\em Construire un nouveau objet \hyperlink{classBibliotheque}{Bibliotheque} avec un objet Json. \end{DoxyCompactList}\item 
+Json\+::\+Value \hyperlink{classBibliotheque_a24b9cdc62d7bf2628e13ac9049dccaf3}{get\+Bilbiotheque} () const
+\begin{DoxyCompactList}\small\item\em Obtenir l\textquotesingle{}objet Json de la \hyperlink{classBibliotheque}{Bibliotheque}. \end{DoxyCompactList}\item 
+string \hyperlink{classBibliotheque_ace0c63ec27d7adfb7146406769f1a051}{get\+Chemin\+Json} () const
+\begin{DoxyCompactList}\small\item\em Obtenir le chemin du fichier .json de la \hyperlink{classBibliotheque}{Bibliotheque}. \end{DoxyCompactList}\item 
+void \hyperlink{classBibliotheque_a8dc396d28693e921f7fd849944356434}{set\+Bilbiotheque} (const Json\+::\+Value json\+Bibliotheque)
+\begin{DoxyCompactList}\small\item\em Affecter l\textquotesingle{}objet Json de la Bilbiotheque. \end{DoxyCompactList}\item 
+void \hyperlink{classBibliotheque_ac9201ed432b00fc3cd2621db1c8df78b}{set\+Chemin\+Json} (const string chemin\+Json)
+\begin{DoxyCompactList}\small\item\em Affecter le chemin du fichier .json de la \hyperlink{classBibliotheque}{Bibliotheque}. \end{DoxyCompactList}\item 
+void \hyperlink{classBibliotheque_a246e3a8893bb28b0d76845c624a1cd48}{Ajouter\+Image} (string chemin\+Acces\+Contenu, string titre, int numero, double cout, string source, string date\+Ajout, string date\+Creation, string acces)
+\begin{DoxyCompactList}\small\item\em Ajouter une image a l\textquotesingle{}objet Json de la \hyperlink{classBibliotheque}{Bibliotheque}. \end{DoxyCompactList}\item 
+void \hyperlink{classBibliotheque_a3e4940fd008650236beae91780d7b068}{Supprimer\+Image} (int numero)
+\begin{DoxyCompactList}\small\item\em Supprimer une image de l\textquotesingle{}objet Json de la \hyperlink{classBibliotheque}{Bibliotheque}. \end{DoxyCompactList}\item 
+void \hyperlink{classBibliotheque_abaf79da5c656d7cccb14b3c3a4b542f6}{Sauvegarder} (string file\+Name)
+\begin{DoxyCompactList}\small\item\em Sauvegarder l\textquotesingle{}objet json de la \hyperlink{classBibliotheque}{Bibliotheque} dans un fichier .json. \end{DoxyCompactList}\item 
+void \hyperlink{classBibliotheque_a61778c23eb938c95b4de4306c14fe754}{maj\+Biblio\+Suivant\+Droit\+Acces} (const bool droit\+Acces)
+\begin{DoxyCompactList}\small\item\em Mettre à jour la \hyperlink{classBibliotheque}{Bibliotheque} suivant suivant les droits d\textquotesingle{}acces de l\textquotesingle{}utilisateur. ~\newline
+ Si droit\+Acces = true (Utilisateur de Niveau 1) alors les images ayant un acces restreint sont supprimées de l\textquotesingle{}objet json de la \hyperlink{classBibliotheque}{Bibliotheque}. ~\newline
+ Si droit\+Acces = false (Utilisateur de Niveau 2) alors on garde toutes les images dans l\textquotesingle{}objet json. \end{DoxyCompactList}\item 
+Json\+::\+Value \hyperlink{classBibliotheque_a69655581e76d36176a4336a1504a2781}{Construire\+Afficher\+Sous\+Liste\+Cout} (const int choix)
+\begin{DoxyCompactList}\small\item\em Construire une sous liste d\textquotesingle{}images de la \hyperlink{classBibliotheque}{Bibliotheque} suivant le choix de la plage de cout \+: ~\newline
+ 1 \+: gratuit ~\newline
+ 2 \+: cout $<$= 99,99€ ~\newline
+ 3 \+: cout $<$= 999,99€ ~\newline
+ 4 \+: cout $>$ 1000€ \end{DoxyCompactList}\item 
+Json\+::\+Value \hyperlink{classBibliotheque_a3b03f7002bdb3bf8292ab5a676f74bf0}{Construire\+Afficher\+Sous\+Liste\+Cout} (double cout\+Min, double cout\+Max)
+\begin{DoxyCompactList}\small\item\em Construire une sous liste d\textquotesingle{}images de la \hyperlink{classBibliotheque}{Bibliotheque} suivant la plage de cout \mbox{[}cout\+Min, cout\+Max\mbox{]}. \end{DoxyCompactList}\item 
+Json\+::\+Value \hyperlink{classBibliotheque_a6b50b88a3f8f402052649e1bdc495b9a}{Construire\+Afficher\+Sous\+Liste\+Date\+Ajout} (const int choix)
+\begin{DoxyCompactList}\small\item\em Construire une sous liste d\textquotesingle{}images de la \hyperlink{classBibliotheque}{Bibliotheque} suivant le choix de la plage de la date d\textquotesingle{}ajout \+: ~\newline
+ 1 \+: Ajouter aujourd\textquotesingle{}hui ~\newline
+ 2 \+: Ajouter il y a moins de 7 jours ~\newline
+ 3 \+: Ajouter ce mois ~\newline
+ 4 \+: Ajouter cette annee. \end{DoxyCompactList}\item 
+Json\+::\+Value \hyperlink{classBibliotheque_aa06803a5d680126cdbddbe4e1ab9395c}{Trier} (const int choix)
+\begin{DoxyCompactList}\small\item\em Trier l\textquotesingle{}objet json de la \hyperlink{classBibliotheque}{Bibliotheque} suivant les critères \+: ~\newline
+ 1 \+: Cout decroissant ~\newline
+ 2 \+: Numero decroissant ~\newline
+ 3 \+: Acces Restreint puis Acces Publique. \end{DoxyCompactList}\item 
+vector$<$ int $>$ \hyperlink{classBibliotheque_ad62c3fc7fd3829a0634a22ad98aa9332}{Trier} (vector$<$ double $>$ valeur\+Non\+Tri)
+\begin{DoxyCompactList}\small\item\em Trier un vecteur de reels dans l\textquotesingle{}ordre décroissant. \end{DoxyCompactList}\item 
+vector$<$ int $>$ \hyperlink{classBibliotheque_af95534b5f7fba8f1a6dcd1215bd55f96}{Trier} (vector$<$ string $>$ valeur\+Non\+Tri)
+\begin{DoxyCompactList}\small\item\em Trier un vecteur de chaines characteres dans l\textquotesingle{}ordre décroissant. \end{DoxyCompactList}\item 
+vector$<$ int $>$ \hyperlink{classBibliotheque_a0a0c1d628bfa840f764d4ec483f4b1e6}{Trier} (vector$<$ int $>$ valeur\+Non\+Tri)
+\begin{DoxyCompactList}\small\item\em Trier un vecteur d\textquotesingle{}entiers dans l\textquotesingle{}ordre décroissant. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Fonctions membres publiques statiques}
+\begin{DoxyCompactItemize}
+\item 
+static void \hyperlink{classBibliotheque_af2649bd20b0cf9cd35165abee4a45a12}{Extraire\+Date} (const string date, string \&jour, string \&mois, string \&annee)
+\begin{DoxyCompactList}\small\item\em Extraire jour, mois, annee a partir d\textquotesingle{}une date. \end{DoxyCompactList}\item 
+static void \hyperlink{classBibliotheque_a0756c71060d89b307c1a051fdeee6051}{Verifier\+Extension} (string \&nom)
+\begin{DoxyCompactList}\small\item\em Verifier l\textquotesingle{}extension \char`\"{}.\+json\char`\"{}. \end{DoxyCompactList}\item 
+static bool \hyperlink{classBibliotheque_a66606b7018ddd339af2a608ea4e6de9c}{Verifier\+Numero} (const int numero, const Json\+::\+Value biblio)
+\begin{DoxyCompactList}\small\item\em Verifier l\textquotesingle{}existance d\textquotesingle{}une image de numero spécifique dans l\textquotesingle{}objet json de la bibliotheque. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Attributs privés}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classBibliotheque_a15a693b9eedd442d0cc00489b5ea6e5e}\label{classBibliotheque_a15a693b9eedd442d0cc00489b5ea6e5e}} 
+Json\+::\+Value \hyperlink{classBibliotheque_a15a693b9eedd442d0cc00489b5ea6e5e}{\+\_\+bibliotheque}
+\begin{DoxyCompactList}\small\item\em Objet Json de la bibliotheque. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classBibliotheque_a9628b7dc59bbb3894c17634addc8016a}\label{classBibliotheque_a9628b7dc59bbb3894c17634addc8016a}} 
+string \hyperlink{classBibliotheque_a9628b7dc59bbb3894c17634addc8016a}{\+\_\+chemin\+Json}
+\begin{DoxyCompactList}\small\item\em Chemin du fichier .json de la bibliotheque. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Description détaillée}
+La classe \hyperlink{classBibliotheque}{Bibliotheque} permet la gestion d\textquotesingle{}une bibliotheque d\textquotesingle{}images. 
+
+\subsection{Documentation des constructeurs et destructeur}
+\mbox{\Hypertarget{classBibliotheque_ac18f721f99ed6699547099e554af08fe}\label{classBibliotheque_ac18f721f99ed6699547099e554af08fe}} 
+\index{Bibliotheque@{Bibliotheque}!Bibliotheque@{Bibliotheque}}
+\index{Bibliotheque@{Bibliotheque}!Bibliotheque@{Bibliotheque}}
+\subsubsection{\texorpdfstring{Bibliotheque()}{Bibliotheque()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily Bibliotheque\+::\+Bibliotheque (\begin{DoxyParamCaption}\item[{string}]{nom\+Bibliotheque }\end{DoxyParamCaption})}
+
+
+
+Construire un nouveau objet \hyperlink{classBibliotheque}{Bibliotheque} avec le nom de la bibliotheque. 
+
+
+\begin{DoxyParams}{Paramètres}
+{\em nom\+Bibliotheque} & string \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classBibliotheque_abeef5fed51f37a993d77ba5af478051c}\label{classBibliotheque_abeef5fed51f37a993d77ba5af478051c}} 
+\index{Bibliotheque@{Bibliotheque}!Bibliotheque@{Bibliotheque}}
+\index{Bibliotheque@{Bibliotheque}!Bibliotheque@{Bibliotheque}}
+\subsubsection{\texorpdfstring{Bibliotheque()}{Bibliotheque()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily Bibliotheque\+::\+Bibliotheque (\begin{DoxyParamCaption}\item[{const Json\+::\+Value}]{json\+Bibliotheque }\end{DoxyParamCaption})}
+
+
+
+Construire un nouveau objet \hyperlink{classBibliotheque}{Bibliotheque} avec un objet Json. 
+
+
+\begin{DoxyParams}{Paramètres}
+{\em json\+Bibliotheque} & Json\+::\+Value \\
+\hline
+\end{DoxyParams}
+
+
+\subsection{Documentation des fonctions membres}
+\mbox{\Hypertarget{classBibliotheque_a246e3a8893bb28b0d76845c624a1cd48}\label{classBibliotheque_a246e3a8893bb28b0d76845c624a1cd48}} 
+\index{Bibliotheque@{Bibliotheque}!Ajouter\+Image@{Ajouter\+Image}}
+\index{Ajouter\+Image@{Ajouter\+Image}!Bibliotheque@{Bibliotheque}}
+\subsubsection{\texorpdfstring{Ajouter\+Image()}{AjouterImage()}}
+{\footnotesize\ttfamily void Bibliotheque\+::\+Ajouter\+Image (\begin{DoxyParamCaption}\item[{string}]{chemin\+Acces\+Contenu,  }\item[{string}]{titre,  }\item[{int}]{numero,  }\item[{double}]{cout,  }\item[{string}]{source,  }\item[{string}]{date\+Ajout,  }\item[{string}]{date\+Creation,  }\item[{string}]{acces }\end{DoxyParamCaption})}
+
+
+
+Ajouter une image a l\textquotesingle{}objet Json de la \hyperlink{classBibliotheque}{Bibliotheque}. 
+
+
+\begin{DoxyParams}{Paramètres}
+{\em chemin\+Acces\+Contenu} & string \\
+\hline
+{\em titre} & string \\
+\hline
+{\em numero} & int \\
+\hline
+{\em cout} & double \\
+\hline
+{\em source} & string \\
+\hline
+{\em date\+Ajout} & string \\
+\hline
+{\em date\+Creation} & string \\
+\hline
+{\em acces} & string \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classBibliotheque_a69655581e76d36176a4336a1504a2781}\label{classBibliotheque_a69655581e76d36176a4336a1504a2781}} 
+\index{Bibliotheque@{Bibliotheque}!Construire\+Afficher\+Sous\+Liste\+Cout@{Construire\+Afficher\+Sous\+Liste\+Cout}}
+\index{Construire\+Afficher\+Sous\+Liste\+Cout@{Construire\+Afficher\+Sous\+Liste\+Cout}!Bibliotheque@{Bibliotheque}}
+\subsubsection{\texorpdfstring{Construire\+Afficher\+Sous\+Liste\+Cout()}{ConstruireAfficherSousListeCout()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily Json\+::\+Value Bibliotheque\+::\+Construire\+Afficher\+Sous\+Liste\+Cout (\begin{DoxyParamCaption}\item[{const int}]{choix }\end{DoxyParamCaption})}
+
+
+
+Construire une sous liste d\textquotesingle{}images de la \hyperlink{classBibliotheque}{Bibliotheque} suivant le choix de la plage de cout \+: ~\newline
+ 1 \+: gratuit ~\newline
+ 2 \+: cout $<$= 99,99€ ~\newline
+ 3 \+: cout $<$= 999,99€ ~\newline
+ 4 \+: cout $>$ 1000€ 
+
+
+\begin{DoxyParams}{Paramètres}
+{\em choix} & int \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Renvoie}
+Json\+::\+Value \+: un objet json contenant la sous liste construite. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classBibliotheque_a3b03f7002bdb3bf8292ab5a676f74bf0}\label{classBibliotheque_a3b03f7002bdb3bf8292ab5a676f74bf0}} 
+\index{Bibliotheque@{Bibliotheque}!Construire\+Afficher\+Sous\+Liste\+Cout@{Construire\+Afficher\+Sous\+Liste\+Cout}}
+\index{Construire\+Afficher\+Sous\+Liste\+Cout@{Construire\+Afficher\+Sous\+Liste\+Cout}!Bibliotheque@{Bibliotheque}}
+\subsubsection{\texorpdfstring{Construire\+Afficher\+Sous\+Liste\+Cout()}{ConstruireAfficherSousListeCout()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily Json\+::\+Value Bibliotheque\+::\+Construire\+Afficher\+Sous\+Liste\+Cout (\begin{DoxyParamCaption}\item[{double}]{cout\+Min,  }\item[{double}]{cout\+Max }\end{DoxyParamCaption})}
+
+
+
+Construire une sous liste d\textquotesingle{}images de la \hyperlink{classBibliotheque}{Bibliotheque} suivant la plage de cout \mbox{[}cout\+Min, cout\+Max\mbox{]}. 
+
+
+\begin{DoxyParams}{Paramètres}
+{\em cout\+Min} & double \\
+\hline
+{\em cout\+Max} & double \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Renvoie}
+Json\+::\+Value \+: un objet json contenant la sous liste construite. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classBibliotheque_a6b50b88a3f8f402052649e1bdc495b9a}\label{classBibliotheque_a6b50b88a3f8f402052649e1bdc495b9a}} 
+\index{Bibliotheque@{Bibliotheque}!Construire\+Afficher\+Sous\+Liste\+Date\+Ajout@{Construire\+Afficher\+Sous\+Liste\+Date\+Ajout}}
+\index{Construire\+Afficher\+Sous\+Liste\+Date\+Ajout@{Construire\+Afficher\+Sous\+Liste\+Date\+Ajout}!Bibliotheque@{Bibliotheque}}
+\subsubsection{\texorpdfstring{Construire\+Afficher\+Sous\+Liste\+Date\+Ajout()}{ConstruireAfficherSousListeDateAjout()}}
+{\footnotesize\ttfamily Json\+::\+Value Bibliotheque\+::\+Construire\+Afficher\+Sous\+Liste\+Date\+Ajout (\begin{DoxyParamCaption}\item[{const int}]{choix }\end{DoxyParamCaption})}
+
+
+
+Construire une sous liste d\textquotesingle{}images de la \hyperlink{classBibliotheque}{Bibliotheque} suivant le choix de la plage de la date d\textquotesingle{}ajout \+: ~\newline
+ 1 \+: Ajouter aujourd\textquotesingle{}hui ~\newline
+ 2 \+: Ajouter il y a moins de 7 jours ~\newline
+ 3 \+: Ajouter ce mois ~\newline
+ 4 \+: Ajouter cette annee. 
+
+
+\begin{DoxyParams}{Paramètres}
+{\em choix} & int \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Renvoie}
+Json\+::\+Value \+: un objet json contenant la sous liste construite suivant le critère choisi. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classBibliotheque_af2649bd20b0cf9cd35165abee4a45a12}\label{classBibliotheque_af2649bd20b0cf9cd35165abee4a45a12}} 
+\index{Bibliotheque@{Bibliotheque}!Extraire\+Date@{Extraire\+Date}}
+\index{Extraire\+Date@{Extraire\+Date}!Bibliotheque@{Bibliotheque}}
+\subsubsection{\texorpdfstring{Extraire\+Date()}{ExtraireDate()}}
+{\footnotesize\ttfamily static void Bibliotheque\+::\+Extraire\+Date (\begin{DoxyParamCaption}\item[{const string}]{date,  }\item[{string \&}]{jour,  }\item[{string \&}]{mois,  }\item[{string \&}]{annee }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Extraire jour, mois, annee a partir d\textquotesingle{}une date. 
+
+
+\begin{DoxyParams}{Paramètres}
+{\em date} & \\
+\hline
+{\em jour} & \\
+\hline
+{\em mois} & \\
+\hline
+{\em annee} & \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classBibliotheque_a24b9cdc62d7bf2628e13ac9049dccaf3}\label{classBibliotheque_a24b9cdc62d7bf2628e13ac9049dccaf3}} 
+\index{Bibliotheque@{Bibliotheque}!get\+Bilbiotheque@{get\+Bilbiotheque}}
+\index{get\+Bilbiotheque@{get\+Bilbiotheque}!Bibliotheque@{Bibliotheque}}
+\subsubsection{\texorpdfstring{get\+Bilbiotheque()}{getBilbiotheque()}}
+{\footnotesize\ttfamily Json\+::\+Value Bibliotheque\+::get\+Bilbiotheque (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const}
+
+
+
+Obtenir l\textquotesingle{}objet Json de la \hyperlink{classBibliotheque}{Bibliotheque}. 
+
+\begin{DoxyReturn}{Renvoie}
+Json\+::\+Value \+: l\textquotesingle{}objet Json de la \hyperlink{classBibliotheque}{Bibliotheque} 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classBibliotheque_ace0c63ec27d7adfb7146406769f1a051}\label{classBibliotheque_ace0c63ec27d7adfb7146406769f1a051}} 
+\index{Bibliotheque@{Bibliotheque}!get\+Chemin\+Json@{get\+Chemin\+Json}}
+\index{get\+Chemin\+Json@{get\+Chemin\+Json}!Bibliotheque@{Bibliotheque}}
+\subsubsection{\texorpdfstring{get\+Chemin\+Json()}{getCheminJson()}}
+{\footnotesize\ttfamily string Bibliotheque\+::get\+Chemin\+Json (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const}
+
+
+
+Obtenir le chemin du fichier .json de la \hyperlink{classBibliotheque}{Bibliotheque}. 
+
+\begin{DoxyReturn}{Renvoie}
+string \+: une chaine de charactere contenant le chemin du fichier .json de la \hyperlink{classBibliotheque}{Bibliotheque}. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classBibliotheque_a61778c23eb938c95b4de4306c14fe754}\label{classBibliotheque_a61778c23eb938c95b4de4306c14fe754}} 
+\index{Bibliotheque@{Bibliotheque}!maj\+Biblio\+Suivant\+Droit\+Acces@{maj\+Biblio\+Suivant\+Droit\+Acces}}
+\index{maj\+Biblio\+Suivant\+Droit\+Acces@{maj\+Biblio\+Suivant\+Droit\+Acces}!Bibliotheque@{Bibliotheque}}
+\subsubsection{\texorpdfstring{maj\+Biblio\+Suivant\+Droit\+Acces()}{majBiblioSuivantDroitAcces()}}
+{\footnotesize\ttfamily void Bibliotheque\+::maj\+Biblio\+Suivant\+Droit\+Acces (\begin{DoxyParamCaption}\item[{const bool}]{droit\+Acces }\end{DoxyParamCaption})}
+
+
+
+Mettre à jour la \hyperlink{classBibliotheque}{Bibliotheque} suivant suivant les droits d\textquotesingle{}acces de l\textquotesingle{}utilisateur. ~\newline
+ Si droit\+Acces = true (Utilisateur de Niveau 1) alors les images ayant un acces restreint sont supprimées de l\textquotesingle{}objet json de la \hyperlink{classBibliotheque}{Bibliotheque}. ~\newline
+ Si droit\+Acces = false (Utilisateur de Niveau 2) alors on garde toutes les images dans l\textquotesingle{}objet json. 
+
+
+\begin{DoxyParams}{Paramètres}
+{\em droit\+Acces} & bool \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classBibliotheque_abaf79da5c656d7cccb14b3c3a4b542f6}\label{classBibliotheque_abaf79da5c656d7cccb14b3c3a4b542f6}} 
+\index{Bibliotheque@{Bibliotheque}!Sauvegarder@{Sauvegarder}}
+\index{Sauvegarder@{Sauvegarder}!Bibliotheque@{Bibliotheque}}
+\subsubsection{\texorpdfstring{Sauvegarder()}{Sauvegarder()}}
+{\footnotesize\ttfamily void Bibliotheque\+::\+Sauvegarder (\begin{DoxyParamCaption}\item[{string}]{file\+Name }\end{DoxyParamCaption})}
+
+
+
+Sauvegarder l\textquotesingle{}objet json de la \hyperlink{classBibliotheque}{Bibliotheque} dans un fichier .json. 
+
+
+\begin{DoxyParams}{Paramètres}
+{\em file\+Name} & string \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classBibliotheque_a8dc396d28693e921f7fd849944356434}\label{classBibliotheque_a8dc396d28693e921f7fd849944356434}} 
+\index{Bibliotheque@{Bibliotheque}!set\+Bilbiotheque@{set\+Bilbiotheque}}
+\index{set\+Bilbiotheque@{set\+Bilbiotheque}!Bibliotheque@{Bibliotheque}}
+\subsubsection{\texorpdfstring{set\+Bilbiotheque()}{setBilbiotheque()}}
+{\footnotesize\ttfamily void Bibliotheque\+::set\+Bilbiotheque (\begin{DoxyParamCaption}\item[{const Json\+::\+Value}]{json\+Bibliotheque }\end{DoxyParamCaption})}
+
+
+
+Affecter l\textquotesingle{}objet Json de la Bilbiotheque. 
+
+
+\begin{DoxyParams}{Paramètres}
+{\em json\+Bibliotheque} & Json\+::\+Value \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classBibliotheque_ac9201ed432b00fc3cd2621db1c8df78b}\label{classBibliotheque_ac9201ed432b00fc3cd2621db1c8df78b}} 
+\index{Bibliotheque@{Bibliotheque}!set\+Chemin\+Json@{set\+Chemin\+Json}}
+\index{set\+Chemin\+Json@{set\+Chemin\+Json}!Bibliotheque@{Bibliotheque}}
+\subsubsection{\texorpdfstring{set\+Chemin\+Json()}{setCheminJson()}}
+{\footnotesize\ttfamily void Bibliotheque\+::set\+Chemin\+Json (\begin{DoxyParamCaption}\item[{const string}]{chemin\+Json }\end{DoxyParamCaption})}
+
+
+
+Affecter le chemin du fichier .json de la \hyperlink{classBibliotheque}{Bibliotheque}. 
+
+
+\begin{DoxyParams}{Paramètres}
+{\em chemin\+Json} & string \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classBibliotheque_a3e4940fd008650236beae91780d7b068}\label{classBibliotheque_a3e4940fd008650236beae91780d7b068}} 
+\index{Bibliotheque@{Bibliotheque}!Supprimer\+Image@{Supprimer\+Image}}
+\index{Supprimer\+Image@{Supprimer\+Image}!Bibliotheque@{Bibliotheque}}
+\subsubsection{\texorpdfstring{Supprimer\+Image()}{SupprimerImage()}}
+{\footnotesize\ttfamily void Bibliotheque\+::\+Supprimer\+Image (\begin{DoxyParamCaption}\item[{int}]{numero }\end{DoxyParamCaption})}
+
+
+
+Supprimer une image de l\textquotesingle{}objet Json de la \hyperlink{classBibliotheque}{Bibliotheque}. 
+
+
+\begin{DoxyParams}{Paramètres}
+{\em numero} & int \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classBibliotheque_aa06803a5d680126cdbddbe4e1ab9395c}\label{classBibliotheque_aa06803a5d680126cdbddbe4e1ab9395c}} 
+\index{Bibliotheque@{Bibliotheque}!Trier@{Trier}}
+\index{Trier@{Trier}!Bibliotheque@{Bibliotheque}}
+\subsubsection{\texorpdfstring{Trier()}{Trier()}\hspace{0.1cm}{\footnotesize\ttfamily [1/4]}}
+{\footnotesize\ttfamily Json\+::\+Value Bibliotheque\+::\+Trier (\begin{DoxyParamCaption}\item[{const int}]{choix }\end{DoxyParamCaption})}
+
+
+
+Trier l\textquotesingle{}objet json de la \hyperlink{classBibliotheque}{Bibliotheque} suivant les critères \+: ~\newline
+ 1 \+: Cout decroissant ~\newline
+ 2 \+: Numero decroissant ~\newline
+ 3 \+: Acces Restreint puis Acces Publique. 
+
+
+\begin{DoxyParams}{Paramètres}
+{\em choix} & \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Renvoie}
+Json\+::\+Value \+: un objet json de contenant une bibliothèque triée suivant le critère choisi. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classBibliotheque_ad62c3fc7fd3829a0634a22ad98aa9332}\label{classBibliotheque_ad62c3fc7fd3829a0634a22ad98aa9332}} 
+\index{Bibliotheque@{Bibliotheque}!Trier@{Trier}}
+\index{Trier@{Trier}!Bibliotheque@{Bibliotheque}}
+\subsubsection{\texorpdfstring{Trier()}{Trier()}\hspace{0.1cm}{\footnotesize\ttfamily [2/4]}}
+{\footnotesize\ttfamily vector$<$int$>$ Bibliotheque\+::\+Trier (\begin{DoxyParamCaption}\item[{vector$<$ double $>$}]{valeur\+Non\+Tri }\end{DoxyParamCaption})}
+
+
+
+Trier un vecteur de reels dans l\textquotesingle{}ordre décroissant. 
+
+
+\begin{DoxyParams}{Paramètres}
+{\em valeur\+Non\+Tri} & vector$<$double$>$ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Renvoie}
+vector$<$int$>$ \+: un vecteur d\textquotesingle{}entiers contenant les indices triés du vecteur d\textquotesingle{}entrée. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classBibliotheque_af95534b5f7fba8f1a6dcd1215bd55f96}\label{classBibliotheque_af95534b5f7fba8f1a6dcd1215bd55f96}} 
+\index{Bibliotheque@{Bibliotheque}!Trier@{Trier}}
+\index{Trier@{Trier}!Bibliotheque@{Bibliotheque}}
+\subsubsection{\texorpdfstring{Trier()}{Trier()}\hspace{0.1cm}{\footnotesize\ttfamily [3/4]}}
+{\footnotesize\ttfamily vector$<$int$>$ Bibliotheque\+::\+Trier (\begin{DoxyParamCaption}\item[{vector$<$ string $>$}]{valeur\+Non\+Tri }\end{DoxyParamCaption})}
+
+
+
+Trier un vecteur de chaines characteres dans l\textquotesingle{}ordre décroissant. 
+
+
+\begin{DoxyParams}{Paramètres}
+{\em valeur\+Non\+Tri} & vector$<$string$>$ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Renvoie}
+vector$<$int$>$ \+: un vecteur d\textquotesingle{}entiers contenant les indices triés du vecteur d\textquotesingle{}entrée. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classBibliotheque_a0a0c1d628bfa840f764d4ec483f4b1e6}\label{classBibliotheque_a0a0c1d628bfa840f764d4ec483f4b1e6}} 
+\index{Bibliotheque@{Bibliotheque}!Trier@{Trier}}
+\index{Trier@{Trier}!Bibliotheque@{Bibliotheque}}
+\subsubsection{\texorpdfstring{Trier()}{Trier()}\hspace{0.1cm}{\footnotesize\ttfamily [4/4]}}
+{\footnotesize\ttfamily vector$<$int$>$ Bibliotheque\+::\+Trier (\begin{DoxyParamCaption}\item[{vector$<$ int $>$}]{valeur\+Non\+Tri }\end{DoxyParamCaption})}
+
+
+
+Trier un vecteur d\textquotesingle{}entiers dans l\textquotesingle{}ordre décroissant. 
+
+
+\begin{DoxyParams}{Paramètres}
+{\em valeur\+Non\+Tri} & vector$<$int$>$ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Renvoie}
+vector$<$int$>$ \+: un vecteur d\textquotesingle{}entiers contenant les indices triés du vecteur d\textquotesingle{}entrée. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classBibliotheque_a0756c71060d89b307c1a051fdeee6051}\label{classBibliotheque_a0756c71060d89b307c1a051fdeee6051}} 
+\index{Bibliotheque@{Bibliotheque}!Verifier\+Extension@{Verifier\+Extension}}
+\index{Verifier\+Extension@{Verifier\+Extension}!Bibliotheque@{Bibliotheque}}
+\subsubsection{\texorpdfstring{Verifier\+Extension()}{VerifierExtension()}}
+{\footnotesize\ttfamily static void Bibliotheque\+::\+Verifier\+Extension (\begin{DoxyParamCaption}\item[{string \&}]{nom }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Verifier l\textquotesingle{}extension \char`\"{}.\+json\char`\"{}. 
+
+
+\begin{DoxyParams}{Paramètres}
+{\em nom} & \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classBibliotheque_a66606b7018ddd339af2a608ea4e6de9c}\label{classBibliotheque_a66606b7018ddd339af2a608ea4e6de9c}} 
+\index{Bibliotheque@{Bibliotheque}!Verifier\+Numero@{Verifier\+Numero}}
+\index{Verifier\+Numero@{Verifier\+Numero}!Bibliotheque@{Bibliotheque}}
+\subsubsection{\texorpdfstring{Verifier\+Numero()}{VerifierNumero()}}
+{\footnotesize\ttfamily static bool Bibliotheque\+::\+Verifier\+Numero (\begin{DoxyParamCaption}\item[{const int}]{numero,  }\item[{const Json\+::\+Value}]{biblio }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Verifier l\textquotesingle{}existance d\textquotesingle{}une image de numero spécifique dans l\textquotesingle{}objet json de la bibliotheque. 
+
+
+\begin{DoxyParams}{Paramètres}
+{\em numero} & \\
+\hline
+{\em biblio} & \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Renvoie}
+
+\end{DoxyReturn}
+
+
+La documentation de cette classe a été générée à partir du fichier suivant \+:\begin{DoxyCompactItemize}
+\item 
+\hyperlink{bibliotheque_8h}{bibliotheque.\+h}\end{DoxyCompactItemize}
