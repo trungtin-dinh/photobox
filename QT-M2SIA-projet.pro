@@ -25,7 +25,19 @@ SOURCES += \
     ./sources/main.cpp \
     ./sources/mainwindow.cpp \
     ./sources/bibliotheque.cpp \
-    ./sources/ImageToolBox.cpp
+    ./sources/ImageToolBox/ITB_utils.cpp \
+    ./sources/ImageToolBox/ITB_couleur.cpp \
+    ./sources/ImageToolBox/ITB_filtres_couleur.cpp \
+    ./sources/ImageToolBox/ITB_luminosite.cpp \
+    ./sources/ImageToolBox/ITB_histogramme.cpp \
+    ./sources/ImageToolBox/ITB_debruitage.cpp \
+    ./sources/ImageToolBox/ITB_geometrie.cpp \
+    ./sources/ImageToolBox/ITB_contours.cpp \
+    ./sources/ImageToolBox/ITB_seuillage.cpp \
+    ./sources/ImageToolBox/ITB_resolution.cpp \
+    ./sources/ImageToolBox/ITB_fourier.cpp \
+    ./sources/ImageToolBox/ITB_kmeans.cpp \
+    ./sources/ImageToolBox/ITB_hough.cpp
 
 HEADERS += \
     ./headers/mainwindow.h \

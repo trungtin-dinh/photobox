@@ -1,0 +1,22 @@
+# Build folders
+build-*/
+build/
+release/
+debug/
+
+# Qt generated files
+*.pro.user
+*.pro.user.*
+Makefile
+moc_*.cpp
+qrc_*.cpp
+ui_*.h
+*.o
+
+# Local release packages
+Photobox-release/
+*.zip
+
+# Backup files
+*.bak
+*.bak2
