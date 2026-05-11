@@ -1,9 +1,151 @@
 #include "headers/mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <QCoreApplication>
+#include <QDir>
+#include <QFileInfo>
+#include <QStringList>
+
+#ifndef PHOTOBOX_SOURCE_DIR
+#define PHOTOBOX_SOURCE_DIR "."
+#endif
+
+namespace {
+QString cleanPath(const QString& path){
+    return QDir::cleanPath(path) ;
+}
+
+QString sourceDataRoot(){
+    const QString sourceDir = QString::fromLocal8Bit(PHOTOBOX_SOURCE_DIR) ;
+    if(sourceDir.isEmpty()){
+        return QString() ;
+    }
+    return cleanPath(QDir(sourceDir).filePath("DATA")) ;
+}
+
+QString existingDirectory(const QStringList& candidatePaths){
+    for(const QString& candidatePath : candidatePaths){
+        if(candidatePath.isEmpty()){
+            continue ;
+        }
+        const QDir dir(cleanPath(candidatePath)) ;
+        if(dir.exists()){
+            return dir.absolutePath() ;
+        }
+    }
+    return QString() ;
+}
+
+QString dataRootPath(){
+    static QString root ;
+    if(!root.isEmpty()){
+        return root ;
+    }
+
+    const QString appDir = QCoreApplication::applicationDirPath() ;
+
+    // Prefer the project/release DATA directory. Do not base this primarily on
+    // QDir::currentPath(), because QFileDialog can leave the process inside
+    // DATA/Bibliotheques. Using currentPath() first caused nested paths like
+    // DATA/Bibliotheques/DATA/Bibliotheques.
+    const QStringList candidates = {
+        sourceDataRoot(),
+        appDir + "/DATA",
+        appDir + "/../DATA",
+        appDir + "/../photobox/DATA",
+        appDir + "/../../photobox/DATA"
+    } ;
+
+    root = existingDirectory(candidates) ;
+    if(root.isEmpty()){
+        root = cleanPath(appDir + "/DATA") ;
+    }
+
+    QDir().mkpath(root + "/Images") ;
+    QDir().mkpath(root + "/Bibliotheques") ;
+    return root ;
+}
+
+QString dataFilePath(const QString& relativePath){
+    return QDir(dataRootPath()).filePath(relativePath) ;
+}
+
+QString temporaryImagePath(){
+    return dataFilePath("Images/imageTemp.jpg") ;
+}
+
+QString resolveImagePath(const QString& rawPath, const std::string& jsonPath){
+    if(rawPath.isEmpty() || rawPath.startsWith(":")){
+        return rawPath ;
+    }
+
+    const QFileInfo rawInfo(rawPath) ;
+    if(rawInfo.isAbsolute()){
+        return rawInfo.exists() ? rawInfo.absoluteFilePath() : rawPath ;
+    }
+
+    QStringList candidates ;
+
+    if(!jsonPath.empty()){
+        const QFileInfo jsonInfo(QString::fromStdString(jsonPath)) ;
+        candidates << jsonInfo.absoluteDir().filePath(rawPath) ;
+    }
+
+    candidates << QDir::current().filePath(rawPath) ;
+    candidates << QDir(QCoreApplication::applicationDirPath()).filePath(rawPath) ;
+
+    QString normalizedPath = rawPath ;
+    while(normalizedPath.startsWith("./")){
+        normalizedPath.remove(0, 2) ;
+    }
+
+    if(normalizedPath.startsWith("../Images/")){
+        candidates << dataFilePath("Images/" + normalizedPath.mid(QString("../Images/").length())) ;
+    }
+    if(normalizedPath.startsWith("Images/")){
+        candidates << dataFilePath(normalizedPath) ;
+    }
+    if(normalizedPath.startsWith("DATA/")){
+        candidates << QDir(QFileInfo(dataRootPath()).absoluteDir()).filePath(normalizedPath) ;
+    }
+
+    for(const QString& candidate : candidates){
+        const QFileInfo candidateInfo(cleanPath(candidate)) ;
+        if(candidateInfo.exists()){
+            return candidateInfo.absoluteFilePath() ;
+        }
+    }
+
+    return rawPath ;
+}
+
+QString selectedImagePath(const Bibliotheque& bibliotheque, int imageIndex){
+    const QString rawPath = QString::fromStdString(bibliotheque.getBilbiotheque()["images"][imageIndex]["cheminAcces"].asString()) ;
+    return resolveImagePath(rawPath, bibliotheque.getCheminJson()) ;
+}
+
+cv::Mat readImage(const QString& path){
+    // Qt supporte plus de formats que cv::imread (PNG 1-bit, indexé, 16-bit, etc.)
+    QImage qimg(path) ;
+    if(!qimg.isNull()){
+        // Convertir en RGB888 (3 canaux, 8 bits) puis en BGR pour OpenCV
+        qimg = qimg.convertToFormat(QImage::Format_RGB888) ;
+        cv::Mat tmp(qimg.height(), qimg.width(), CV_8UC3,
+                    (void*)qimg.bits(), (size_t)qimg.bytesPerLine()) ;
+        cv::Mat result ;
+        cv::cvtColor(tmp, result, cv::COLOR_RGB2BGR) ;
+        return result ;  // copie indépendante, qimg peut être détruite
+    }
+    // Fallback OpenCV
+    return cv::imread(path.toStdString()) ;
+}
+}
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow){
+    ui(new Ui::MainWindow),
+    _sceneOriginale(nullptr),
+    _sceneTraitee(nullptr){
     ui->setupUi(this) ;
     // Connecter les signaux et slots
     connect(ui->tableWidgetBiblio, SIGNAL(cellClicked(int, int)), this,SLOT(on_tableBiblioRowClicked(int , int))) ;          // connecter la selection d'une ligne avec la selection d'un numero d'image
@@ -63,6 +205,10 @@ MainWindow::MainWindow(QWidget *parent) :
     GenererIcone() ;
     // Messages d'aide
     AfficherMessageAide() ;
+
+    // Histogrammes : auto-scaling pour éviter les pixmaps vides (scaled(0,0))
+    ui->label_histogrammeImageOriginale->setScaledContents(true) ;
+    ui->label_histogrammeImageTraitee->setScaledContents(true) ;
 }
 
 MainWindow::~MainWindow(){
@@ -130,7 +276,7 @@ void MainWindow::on_pushButtonQuitter_clicked(){
 }
 
 void MainWindow::on_pushButtonChargerBiblio_clicked(){
-    QString fileName = QFileDialog::getOpenFileName(0,"Charger la bibliothèque",QCoreApplication::applicationDirPath(),"*.json") ; // Ouvrir une fenetre pour que l'utilisateur choisisse un fichier .json
+    QString fileName = QFileDialog::getOpenFileName(0,"Charger la bibliothèque",dataFilePath("Bibliotheques"),"*.json") ; // Ouvrir une fenetre pour que l'utilisateur choisisse un fichier .json
     QFile fileBiblio(fileName) ;
     // test sur l'ouverture du fichier
     if(fileBiblio.open(QIODevice::ReadOnly)){
@@ -208,7 +354,7 @@ void MainWindow::updateTableWidgetSousListeBiblio(Json::Value biblio){
 }
 
 void MainWindow::on_pushButtonSauvegarder_clicked(){
-    QString fileName = QFileDialog::getSaveFileName(0,tr("Sauvegarder bibliothèque d'images"), QCoreApplication::applicationDirPath(), tr("*.json")) ;
+    QString fileName = QFileDialog::getSaveFileName(0,tr("Sauvegarder bibliothèque d'images"), dataFilePath("Bibliotheques"), tr("*.json")) ;
     //QMessageBox::information(0,"Sauvegarge bibliothèque",fileName) ;
     if (!fileName.isEmpty()){
         string fileNameStr = fileName.toStdString() ;
@@ -301,7 +447,7 @@ void MainWindow::on_pushButtonAjouterImage_clicked(){
     ui->lineEditAjoutImageTitre->clear() ;
     ui->spinBoxAjoutImageNumero->setValue(0) ;
     // Charger l image à ajouter
-    QString fileName = QFileDialog::getOpenFileName(0,tr("Choisir une image à ajouter"), QCoreApplication::applicationDirPath() ,tr("Fichiers Images (*.png *.jpg *.bmp *.pgm *.jpeg *.tiff)")) ;
+    QString fileName = QFileDialog::getOpenFileName(0,tr("Choisir une image à ajouter"), dataFilePath("Images") ,tr("Fichiers Images (*.png *.jpg *.bmp *.pgm *.jpeg *.tiff)")) ;
     if (!fileName.isEmpty()){
         _ImageAjouteeNomFichier = fileName.toStdString() ;
         QPixmap pix(fileName) ;
@@ -340,7 +486,7 @@ void MainWindow::on_pushButtonAjoutImageAjouter_clicked(){
 
 
 void MainWindow::on_pushButtonSauvegarderSousListe_clicked(){
-    QString fileName = QFileDialog::getSaveFileName(0,tr("Sauvegarder bibliothèque d'images"), QCoreApplication::applicationDirPath(), tr("*.json")) ;
+    QString fileName = QFileDialog::getSaveFileName(0,tr("Sauvegarder bibliothèque d'images"), dataFilePath("Bibliotheques"), tr("*.json")) ;
     if (!fileName.isEmpty()){
         string fileNameStr = fileName.toStdString() ;
         Bibliotheque::VerifierExtension(fileNameStr) ;
@@ -355,12 +501,12 @@ void MainWindow::on_pushButtonOuvrirImage_clicked(){
     QString descripteur ;                                   // Descripteur
 
     // Determiner le chemin d'acces a l'image
-    chemin = QString::fromStdString(_objBiblio.getBilbiotheque()["images"][_indiceImageSelectionnee]["cheminAcces"].asString()) ;
+    chemin = selectedImagePath(_objBiblio, _indiceImageSelectionnee) ;
 
     // Affichage de l'image choisie
     // Charger l'image avec son chemin d'acces
     QPixmap image(chemin) ;
-    QGraphicsScene* scene = new QGraphicsScene() ;
+    QGraphicsScene* scene = new QGraphicsScene(this) ;
     scene->addPixmap(image) ;
     ui->graphicsView_contenuImageNonModifiable->setScene(scene) ;
     ui->graphicsView_contenuImageNonModifiable->show() ;
@@ -418,13 +564,13 @@ void MainWindow::on_pushButtonOuvrirImage_clicked(){
 
         // Affichage de l'image choisie
         // Determiner le chemin d'acces a l'image
-        cheminQT = QString::fromStdString(_objBiblio.getBilbiotheque()["images"][_indiceImageSelectionnee]["cheminAcces"].asString()) ;
+        cheminQT = selectedImagePath(_objBiblio, _indiceImageSelectionnee) ;
         chemin = cheminQT.toStdString() ;
 
         // Charger l'image avec son chemin d'acces
-        _imageOriginale = imread(chemin) ;
+        _imageOriginale = readImage(cheminQT) ;
         QPixmap imageQT(cheminQT) ;
-        QGraphicsScene* sceneImageDescripteur = new QGraphicsScene() ;
+        QGraphicsScene* sceneImageDescripteur = new QGraphicsScene(this) ;
         sceneImageDescripteur->addPixmap(imageQT) ;
         ui->graphicsView_contenuImage->setScene(sceneImageDescripteur) ;
         ui->graphicsView_contenuImage->show() ;
@@ -460,6 +606,7 @@ void MainWindow::on_doubleSpinBoxMax_valueChanged(double){
 
 // Agrandissement de l'image (non modifiable)
 void MainWindow::on_horizontalSlider_agrandissementNonModifiable_valueChanged(int value){
+    if(!ui->graphicsView_contenuImageNonModifiable->scene()) return ;
     // Sevlaration des variables
     int hauteurImage = ui->graphicsView_contenuImageNonModifiable->scene()->height() ;      // Hauteur de l'image
     int largeurImage = ui->graphicsView_contenuImageNonModifiable->scene()->width() ;       // Largeur de l'image
@@ -520,6 +667,7 @@ void MainWindow::on_pushButton_modifier_clicked(){
 
 // Agrandissement de l'image
 void MainWindow::on_horizontalSlider_agrandissement_valueChanged(int value){
+    if(!ui->graphicsView_contenuImage->scene()) return ;
     // Sevlaration des variables
     int hauteurImage = ui->graphicsView_contenuImage->scene()->height() ;   // Hauteur de l'image
     int largeurImage = ui->graphicsView_contenuImage->scene()->width() ;    // Largeur de l'image
@@ -545,59 +693,58 @@ void MainWindow::on_horizontalSlider_agrandissement_valueChanged(int value){
 
 // Passer a la page des traitements de l'image choisie
 void MainWindow::on_pushButton_traitementImage_clicked(){
-    // Declaration de variable
-    Size n ;
-    n.height = 1 ;
-    n.width = 3 ;
-    vector<int> temp(3) ;
-    _seuilBas = temp ;
+    vector<int> temp(3, 0) ;
+    _seuilBas  = temp ;
     _seuilHaut = temp ;
-    string nbLigne, nbColonne ;     // Nombre de lignes et de colonnes
-    string resolution ;             // Resolution
-    QString cheminQT = QString::fromStdString(_objBiblio.getBilbiotheque()["images"][_indiceImageSelectionnee]["cheminAcces"].asString()) ;
+    string nbLigne, nbColonne, resolution ;
+    QString cheminQT = selectedImagePath(_objBiblio, _indiceImageSelectionnee) ;
 
-    // Preparation de l'espace de travail
+    // Charger l'image AVANT Reinitialiser pour qu'elle soit valide
+    _imageOriginale = readImage(cheminQT) ;
+    if(_imageOriginale.empty()){
+        QMessageBox::warning(0, "Erreur", "Impossible de charger l'image : " + cheminQT) ;
+        return ;
+    }
+    _imageResultat = _imageOriginale ;
+
+    // Preparation de l'espace de travail (après chargement)
     Reinitialiser() ;
 
-    _imageOriginale = imread(_objBiblio.getBilbiotheque()["images"][_indiceImageSelectionnee]["cheminAcces"].asString()) ;
-    _imageResultat = _imageOriginale ;
-    // Affichage de l'image choisie dans la page du traitement
+    // Passer a la page du traitement EN PREMIER (labels correctement dimensionnés)
+    ui->stackedWidget->setCurrentIndex(6) ;
+    QCoreApplication::processEvents() ;
+
+    // ---- Affichage image originale ----
     QPixmap imageOriginaleQT(cheminQT) ;
-    QGraphicsScene* sceneImageOriginale = new QGraphicsScene() ;
-    sceneImageOriginale->addPixmap(imageOriginaleQT) ;
-    ui->graphicsView_imageOriginale->setScene(sceneImageOriginale) ;
-    ui->graphicsView_imageOriginale->show() ;
-    ui->graphicsView_imageOriginale->fitInView(sceneImageOriginale->sceneRect(), Qt::KeepAspectRatio) ;
+    delete _sceneOriginale ;
+    _sceneOriginale = new QGraphicsScene() ;
+    _sceneOriginale->addPixmap(imageOriginaleQT) ;
+    ui->graphicsView_imageOriginale->setScene(_sceneOriginale) ;
+    ui->graphicsView_imageOriginale->fitInView(_sceneOriginale->sceneRect(), Qt::KeepAspectRatio) ;
 
-    // Histogramme de l'image choisie
+    // ---- Histogramme image originale ----
     _histoImageOriginale = Normalisation(PlotHistogram(_imageOriginale), 255) ;
-    QImage histoImageOriginaleQT = QImage((uchar*) _histoImageOriginale.data, _histoImageOriginale.cols, _histoImageOriginale.rows, _histoImageOriginale.step, QImage::Format_RGB888) ;
-    QPixmap histoImageOrginalePixmap = QPixmap::fromImage(histoImageOriginaleQT) ;
-    int hauteur = ui->label_histogrammeImageOriginale->height() ;       // Hauteur de la fenetre d'affichage
-    int largeur = ui->label_histogrammeImageOriginale->width() ;        // Largeur de la fenetre d'affichage
-    ui->label_histogrammeImageOriginale->setPixmap(histoImageOrginalePixmap.scaled(largeur, hauteur, Qt::IgnoreAspectRatio, Qt::SmoothTransformation)) ;
-    ui->label_histogrammeImageOriginale->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter) ;
+    if(!_histoImageOriginale.empty()){
+        QImage histoQImg((uchar*)_histoImageOriginale.data,
+                         _histoImageOriginale.cols,
+                         _histoImageOriginale.rows,
+                         (int)_histoImageOriginale.step,
+                         QImage::Format_RGB888) ;
+        QPixmap histoPixmap = QPixmap::fromImage(histoQImg) ;
+        ui->label_histogrammeImageOriginale->setPixmap(histoPixmap) ;
+        ui->label_histogrammeImageTraitee->setPixmap(histoPixmap) ; // initialisation
+    }
 
-    // Initialiser l'image resultante et son histogramme
-    ui->graphicsView_imageTraitee->setScene(sceneImageOriginale) ;
-    ui->graphicsView_imageTraitee->show() ;
-    ui->graphicsView_imageTraitee->fitInView(sceneImageOriginale->sceneRect(), Qt::KeepAspectRatio) ;
+    // ---- Image traitée (même image au départ) ----
+    // Utiliser AffichageResultat pour initialiser _sceneTraitee proprement
+    AffichageResultat(_imageOriginale, 1) ;
 
-    // Histogramme - Initialisation
-    ui->label_histogrammeImageTraitee->setPixmap(histoImageOrginalePixmap.scaled(largeur, hauteur, Qt::IgnoreAspectRatio, Qt::SmoothTransformation)) ;
-    ui->label_histogrammeImageTraitee->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter) ;
-
-    // Afficher la resolution
-    nbLigne = to_string((int)_imageOriginale.size().height) ;
+    // ---- Résolution ----
+    nbLigne   = to_string((int)_imageOriginale.size().height) ;
     nbColonne = to_string((int)_imageOriginale.size().width) ;
     resolution = "Resolution : [" + nbLigne + " x " + nbColonne + "]" ;
-    // Image originale
     ui->label_resolutionOriginale->setText(QString::fromStdString(resolution)) ;
-    // Image traitee
     ui->label_resolutionTraitee->setText(QString::fromStdString(resolution)) ;
-
-    // Passer a la page du traitement
-    ui->stackedWidget->setCurrentIndex(6) ;
 }
 
 // --------------------------Page Traitement--------------------------
@@ -615,9 +762,11 @@ void MainWindow::on_pushButton_retour_clicked(){
 
 // Agrandissement de l'image originale
 void MainWindow::on_horizontalSlider_imageOriginale_valueChanged(int value){
+    if(!ui->graphicsView_imageOriginale->scene()) return ;
     // Sevlaration des variables
     int hauteurImage = ui->graphicsView_imageOriginale->scene()->height() ;     // Hauteur de l'image
     int largeurImage = ui->graphicsView_imageOriginale->scene()->width() ;      // Largeur de l'image
+    if(hauteurImage == 0 || largeurImage == 0) return ;
     int hauteurFenetre = ui->graphicsView_imageOriginale->height() ;            // Hauteur de la fenetre
     int largeurFenetre = ui->graphicsView_imageOriginale->width() ;             // Largeur de la fenetre
     double facteur ;                                                            // Facteur d'agrandissement
@@ -640,9 +789,11 @@ void MainWindow::on_horizontalSlider_imageOriginale_valueChanged(int value){
 
 // Agrandissement de l'image traitee
 void MainWindow::on_horizontalSlider_imageTraitee_valueChanged(int value){
+    if(!ui->graphicsView_imageTraitee->scene()) return ;
     // Sevlaration des variables
     int hauteurImage = ui->graphicsView_imageTraitee->scene()->height() ;   // Hauteur de l'image
     int largeurImage = ui->graphicsView_imageTraitee->scene()->width() ;    // Largeur de l'image
+    if(hauteurImage == 0 || largeurImage == 0) return ;
     int hauteurFenetre = ui->graphicsView_imageTraitee->height() ;          // Hauteur de la fenetre
     int largeurFenetre = ui->graphicsView_imageTraitee->width() ;           // Largeur de la fenetre
     double facteur ;                                                        // Facteur d'agrandissement
@@ -665,91 +816,91 @@ void MainWindow::on_horizontalSlider_imageTraitee_valueChanged(int value){
 
 // Reinitialiser
 void MainWindow::on_pushButton_traitementReinitialiser_clicked(){
-    // Declaration de variable
-    string nbLigne, nbColonne ;     // Nombre de lignes et de colonnes
-    string resolution ;             // Resolution
-    QString cheminQT = QString::fromStdString(_objBiblio.getBilbiotheque()["images"][_indiceImageSelectionnee]["cheminAcces"].asString()) ;
+    string nbLigne, nbColonne, resolution ;
+    QString cheminQT = selectedImagePath(_objBiblio, _indiceImageSelectionnee) ;
+
+    // Recharger l'image
+    _imageOriginale = readImage(cheminQT) ;
+    if(_imageOriginale.empty()) return ;
+    _imageResultat = _imageOriginale ;
 
     Reinitialiser() ;
-    // Affichage de l'image originale
+
+    // Affichage image originale
     QPixmap imageOriginaleQT(cheminQT) ;
-    QGraphicsScene* sceneImageOriginale = new QGraphicsScene() ;
-    sceneImageOriginale->addPixmap(imageOriginaleQT) ;
-    ui->graphicsView_imageOriginale->setScene(sceneImageOriginale) ;
-    ui->graphicsView_imageOriginale->show() ;
-    ui->graphicsView_imageOriginale->fitInView(sceneImageOriginale->sceneRect(), Qt::KeepAspectRatio) ;
+    delete _sceneOriginale ;
+    _sceneOriginale = new QGraphicsScene() ;
+    _sceneOriginale->addPixmap(imageOriginaleQT) ;
+    ui->graphicsView_imageOriginale->setScene(_sceneOriginale) ;
+    ui->graphicsView_imageOriginale->fitInView(_sceneOriginale->sceneRect(), Qt::KeepAspectRatio) ;
 
-    // Histogramme de l'image originale
-    _imageOriginale = imread(_objBiblio.getBilbiotheque()["images"][_indiceImageSelectionnee]["cheminAcces"].asString()) ;
-    _histoImageOriginale= Normalisation(PlotHistogram(_imageOriginale), 255) ;
-    QImage histoImageOriginaleQT = QImage((uchar*) _histoImageOriginale.data, _histoImageOriginale.cols, _histoImageOriginale.rows, _histoImageOriginale.step, QImage::Format_RGB888) ;
-    QPixmap histoImageOrginalePixmap = QPixmap::fromImage(histoImageOriginaleQT) ;
-    int hauteur = ui->label_histogrammeImageOriginale->height() ;       // Hauteur de la fenetre d'affichage
-    int largeur = ui->label_histogrammeImageOriginale->width() ;        // Largeur de la fenetre d'affichage
-    ui->label_histogrammeImageOriginale->setPixmap(histoImageOrginalePixmap.scaled(largeur, hauteur, Qt::IgnoreAspectRatio, Qt::SmoothTransformation)) ;
-    ui->label_histogrammeImageOriginale->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter) ;
+    // Histogramme image originale
+    _histoImageOriginale = Normalisation(PlotHistogram(_imageOriginale), 255) ;
+    if(!_histoImageOriginale.empty()){
+        QImage histoQImg((uchar*)_histoImageOriginale.data,
+                         _histoImageOriginale.cols,
+                         _histoImageOriginale.rows,
+                         (int)_histoImageOriginale.step,
+                         QImage::Format_RGB888) ;
+        ui->label_histogrammeImageOriginale->setPixmap(QPixmap::fromImage(histoQImg)) ;
+    }
 
-    // Initialiser l'image resultante et son histogramme
-    ui->graphicsView_imageTraitee->setScene(sceneImageOriginale) ;
-    ui->graphicsView_imageTraitee->show() ;
-    ui->graphicsView_imageTraitee->fitInView(sceneImageOriginale->sceneRect(), Qt::KeepAspectRatio) ;
+    // Image traitee (via AffichageResultat pour gerer _sceneTraitee proprement)
+    AffichageResultat(_imageOriginale, 1) ;
 
-    // Histogramme - Initialisation
-    ui->label_histogrammeImageTraitee->setPixmap(histoImageOrginalePixmap.scaled(largeur, hauteur, Qt::IgnoreAspectRatio, Qt::SmoothTransformation)) ;
-    ui->label_histogrammeImageTraitee->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter) ;
-
-    // Afficher la resolution
-    // Image originale
-    nbLigne = to_string((int)_imageOriginale.size().height) ;
+    nbLigne   = to_string((int)_imageOriginale.size().height) ;
     nbColonne = to_string((int)_imageOriginale.size().width) ;
     resolution = "Resolution : [" + nbLigne + " x " + nbColonne + "]" ;
     ui->label_resolutionOriginale->setText(QString::fromStdString(resolution)) ;
-    // Image traitee
     ui->label_resolutionTraitee->setText(QString::fromStdString(resolution)) ;
 }
 
 // Appliquer le traitement
 void MainWindow::on_pushButton_traitementAppliquer_clicked(){
-    // Declaration des variables
-    string nbLigne, nbColonne ;     // Nombre de lignes et de colonnes
-    string resolution ;             // Resolution
+    if(_imageResultat.empty()){
+        QMessageBox::information(0, "Appliquer", "Aucun traitement à appliquer.") ;
+        return ;
+    }
+    string nbLigne, nbColonne, resolution ;
 
-    // Mise a jour l'image originale temporelle
-    imwrite((QCoreApplication::applicationDirPath()+"/DATA/Images/imageTemp.jpg").toStdString(), _imageResultat) ;
-   _imageOriginale= imread((QCoreApplication::applicationDirPath()+"/DATA/Images/imageTemp.jpg").toStdString()) ;
-    // Convertir en format QT
-    QImage imageOriginaleQT((QCoreApplication::applicationDirPath()+"/DATA/Images/imageTemp.jpg")) ;
-    // Histogramme
-    _histoImageOriginale= Normalisation(PlotHistogram(_imageOriginale), 255) ;
-    QImage histoImageOriginaleQT = QImage((uchar*) _histoImageOriginale.data, _histoImageOriginale.cols, _histoImageOriginale.rows, _histoImageOriginale.step, QImage::Format_RGB888) ;
+    imwrite(temporaryImagePath().toStdString(), _imageResultat) ;
+    _imageOriginale = imread(temporaryImagePath().toStdString()) ;
+    if(_imageOriginale.empty()) return ;
+    _imageResultat = _imageOriginale ;
 
-    // Affichage : Nouvelle image originale
-    QGraphicsScene* scene = new QGraphicsScene() ;
-    scene->addPixmap(QPixmap::fromImage(imageOriginaleQT)) ;
-    ui->graphicsView_imageOriginale->setScene(scene) ;
-    ui->graphicsView_imageOriginale->show() ;
-    ui->graphicsView_imageOriginale->fitInView(scene->sceneRect(), Qt::KeepAspectRatio) ;
-    // Affichage : Histogramme
-    QPixmap histogrammeOriginalePixmap(QPixmap::fromImage(histoImageOriginaleQT)) ;
-    int hauteur = ui->label_histogrammeImageOriginale->height() ;       // Hauteur de la fenetre d'affichage
-    int largeur = ui->label_histogrammeImageOriginale->width() ;        // Largeur de la fenetre d'affichage
-    ui->label_histogrammeImageOriginale->setPixmap(histogrammeOriginalePixmap.scaled(largeur, hauteur, Qt::IgnoreAspectRatio, Qt::SmoothTransformation)) ;
-    ui->label_histogrammeImageOriginale->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter) ;
+    QImage imageOriginaleQT(temporaryImagePath()) ;
+    _histoImageOriginale = Normalisation(PlotHistogram(_imageOriginale), 255) ;
 
-    // Afficher la resolution
-    // Image originale
-    nbLigne = to_string((int)_imageOriginale.size().height) ;
+    delete _sceneOriginale ;
+    _sceneOriginale = new QGraphicsScene() ;
+    _sceneOriginale->addPixmap(QPixmap::fromImage(imageOriginaleQT)) ;
+    ui->graphicsView_imageOriginale->setScene(_sceneOriginale) ;
+    ui->graphicsView_imageOriginale->fitInView(_sceneOriginale->sceneRect(), Qt::KeepAspectRatio) ;
+
+    if(!_histoImageOriginale.empty()){
+        QImage histoQImg((uchar*)_histoImageOriginale.data,
+                         _histoImageOriginale.cols,
+                         _histoImageOriginale.rows,
+                         (int)_histoImageOriginale.step,
+                         QImage::Format_RGB888) ;
+        ui->label_histogrammeImageOriginale->setPixmap(QPixmap::fromImage(histoQImg)) ;
+    }
+
+    nbLigne   = to_string((int)_imageOriginale.size().height) ;
     nbColonne = to_string((int)_imageOriginale.size().width) ;
     resolution = "Resolution : [" + nbLigne + " x " + nbColonne + "]" ;
     ui->label_resolutionOriginale->setText(QString::fromStdString(resolution)) ;
-    // Image traitee
     ui->label_resolutionTraitee->setText(QString::fromStdString(resolution)) ;
 }
 
 // Sauvegarder l'image traitee
 void MainWindow::on_pushButton_traitementSauvegarder_clicked()
 {
-    QString fileName = QFileDialog::getSaveFileName(0,tr("Sauvegarder l'image traitée"), QCoreApplication::applicationDirPath() ,tr("Fichiers Images (*.png *.jpg *.bmp *.pgm *.jpeg *.tiff)")) ;
+    if(_imageResultat.empty()){
+        QMessageBox::information(0, "Sauvegarder", "Aucune image à sauvegarder.") ;
+        return ;
+    }
+    QString fileName = QFileDialog::getSaveFileName(0,tr("Sauvegarder l'image traitée"), dataFilePath("Images") ,tr("Fichiers Images (*.png *.jpg *.bmp *.pgm *.jpeg *.tiff)")) ;
     if (!fileName.isEmpty()){
         if (fileName.count('.')){
          string fileNameStr = fileName.toStdString() ;
@@ -769,7 +920,7 @@ void MainWindow::on_pushButtonAfficherImageTraitee_clicked()
     Mat imageResultat = ImageBGRRGB(_imageResultat);
     QImage imageResultatQT = QImage((uchar*) imageResultat.data, imageResultat.cols, imageResultat.rows, imageResultat.step, QImage::Format_RGB888) ;
     // Affichage de l'image traitée
-    QGraphicsScene* scene = new QGraphicsScene() ;
+    QGraphicsScene* scene = new QGraphicsScene(this) ;
     scene->addPixmap(QPixmap::fromImage(imageResultatQT));
     ui->graphicsView_contenuImageTraiteeAgrandi->setScene(scene) ;
     ui->graphicsView_contenuImageTraiteeAgrandi->show() ;
@@ -829,6 +980,7 @@ void MainWindow::on_radioButton_luminosite_clicked(){
 
 // Modifier la luminosite de l'image
 void MainWindow::on_horizontalSlider_luminosite_valueChanged(int value){
+    if(!ui->radioButton_luminosite->isChecked()) return ;
     // Application du reglage de luminosite
     _imageResultat = ImageLuminosite(_imageOriginale, value) ;
 
@@ -863,6 +1015,7 @@ void MainWindow::on_radioButton_contraste_clicked(){
 
 // Modifier le constraste de l'image
 void MainWindow::on_horizontalSlider_contraste_valueChanged(int value){
+    if(!ui->radioButton_contraste->isChecked()) return ;
     this->setCursor(Qt::WaitCursor);
     // Application de la normalisation
     _imageResultat = Normalisation(_imageOriginale, value) ;
@@ -899,6 +1052,7 @@ void MainWindow::on_radioButton_ombre_clicked(){
 
 // Ombre
 void MainWindow::on_horizontalSlider_ombre_valueChanged(int value){
+    if(!ui->radioButton_ombre->isChecked()) return ;
     _imageResultat = ImageOmbre(_imageOriginale, value) ;
     AffichageResultat(_imageResultat, 1) ;
 }
@@ -930,6 +1084,7 @@ void MainWindow::on_radioButton_brillance_clicked(){
 
 // Haute lumiere
 void MainWindow::on_horizontalSlider_brillance_valueChanged(int value){
+    if(!ui->radioButton_brillance->isChecked()) return ;
     _imageResultat = ImageHauteLumiere(_imageOriginale, value) ;
     AffichageResultat(_imageResultat, 1) ;
 }
@@ -1017,8 +1172,9 @@ void MainWindow::on_groupBox_contours_clicked(){
 void MainWindow::on_radioButton_contoursGradient_clicked(){
     this->setCursor(Qt::WaitCursor);
     if(ui->radioButton_contoursGradient->isChecked()){
+        if(_imageOriginale.empty()){ this->setCursor(Qt::ArrowCursor); return ; }
         ui->radioButton_contoursLaplacien->setChecked(false) ;
-        imwrite((QCoreApplication::applicationDirPath()+"/DATA/Images/imageTemp.jpg").toStdString(), _imageOriginale) ;
+        imwrite(temporaryImagePath().toStdString(), _imageOriginale) ;
         _imageResultat = MonoCouleur(ImageContourGradient(_imageOriginale)) ;
         // Affichage du resultat
         AffichageResultat(_imageResultat, 1) ;
@@ -1081,6 +1237,7 @@ void MainWindow::on_radioButton_bruitage_clicked(){
 
 // Bruiter l'image
 void MainWindow::on_horizontalSlider_Bruitage_valueChanged(int value){
+    if(!ui->radioButton_bruitage->isChecked()) return ;
     // Bruiter l'image par un bruit gaussien
     _imageResultat = ImageBruitGaussien(_imageOriginale,0, value) ;
 
@@ -1197,6 +1354,7 @@ void MainWindow::on_groupBox_filtres_clicked(){
     AffichageResultat(_imageOriginale, 1) ;                      // Image originale
     // Si le box est choisi
     if(ui->groupBox_filtres->isChecked()){
+        DimmerIconesFiltres(true) ;             // Restaurer les icônes en couleurs
         // Desactiver les autres fonctionnalites
         ReinitialiserLuminosite() ;             // Luminosite
         ReinitialiserCouleur() ;                // Couleur
@@ -1420,9 +1578,7 @@ void MainWindow::on_radioButton_jaune_clicked(){
         ui->radioButton_rgb->setChecked(false) ;                    // RGB
 
 
-        // Image jaune
-        imwrite((QCoreApplication::applicationDirPath()+"/DATA/Images/imageTemp.jpg").toStdString(), _imageOriginale) ;
-        _imageResultat = ImageJaune(imread((QCoreApplication::applicationDirPath()+"/DATA/Images/imageTemp.jpg").toStdString())) ;
+        _imageResultat = ImageJaune(_imageOriginale.clone()) ;
 
         // Affichage du resultat
         AffichageResultat(_imageResultat, 1) ;
@@ -1448,9 +1604,7 @@ void MainWindow::on_radioButton_cyan_clicked(){
         ui->radioButtonEgalisation->setChecked(false) ;             // Egalisation d'histogramme
 
 
-        // Image cyane
-        imwrite((QCoreApplication::applicationDirPath()+"/DATA/Images/imageTemp.jpg").toStdString(), _imageOriginale) ;
-        _imageResultat = ImageCyan(imread((QCoreApplication::applicationDirPath()+"/DATA/Images/imageTemp.jpg").toStdString())) ;
+        _imageResultat = ImageCyan(_imageOriginale.clone()) ;
 
         // Affichage du resultat
         AffichageResultat(_imageResultat, 1) ;
@@ -1475,9 +1629,7 @@ void MainWindow::on_radioButton_magenta_clicked(){
         ui->radioButtonBruitPoivreSel->setChecked(false) ;          // Bruit poivre et sel
         ui->radioButtonEgalisation->setChecked(false) ;             // Egalisation d'histogramme
 
-        // Image magenta
-        imwrite((QCoreApplication::applicationDirPath()+"/DATA/Images/imageTemp.jpg").toStdString(), _imageOriginale) ;
-        _imageResultat = ImageMagenta(imread((QCoreApplication::applicationDirPath()+"/DATA/Images/imageTemp.jpg").toStdString())) ;
+        _imageResultat = ImageMagenta(_imageOriginale.clone()) ;
 
         // Affichage du resultat
         AffichageResultat(_imageResultat, 1) ;
@@ -1502,9 +1654,7 @@ void MainWindow::on_radioButton_rgb_clicked(){
         ui->radioButtonBruitPoivreSel->setChecked(false) ;          // Bruit poivre et sel
         ui->radioButtonEgalisation->setChecked(false) ;             // Egalisation d'histogramme
 
-        // Image RGB
-        imwrite((QCoreApplication::applicationDirPath()+"/DATA/Images/imageTemp.jpg").toStdString(), _imageOriginale) ;
-        _imageResultat = ImageRGB(imread((QCoreApplication::applicationDirPath()+"/DATA/Images/imageTemp.jpg").toStdString())) ;
+        _imageResultat = ImageRGB(_imageOriginale.clone()) ;
 
         // Affichage du resultat
         AffichageResultat(_imageResultat, 1) ;
@@ -1529,9 +1679,8 @@ void MainWindow::on_radioButtonEgalisation_clicked(){
         ui->radioButton_niveauGris->setChecked(false) ;             // Nilveau de gris
         ui->radioButtonBruitPoivreSel->setChecked(false) ;          // Bruit poivre et sel
 
-        // Ajouter du bruit gaussien dans l'image
-        imwrite((QCoreApplication::applicationDirPath()+"/DATA/Images/imageTemp.jpg").toStdString(), _imageOriginale) ;
-        _imageResultat = ImageEgalisation(imread((QCoreApplication::applicationDirPath()+"/DATA/Images/imageTemp.jpg").toStdString())) ;
+        // Egalisation d'histogramme
+        _imageResultat = ImageEgalisation(_imageOriginale.clone()) ;
         AffichageResultat(_imageResultat, 1) ;
     }
     this->setCursor(Qt::ArrowCursor);
@@ -2072,6 +2221,7 @@ void MainWindow::on_radioButton_bipolaire_clicked(){
 
 // Resolution
 void MainWindow::on_horizontalSlider_resolution_valueChanged(int value){
+    if(!ui->radioButton_resolution->isChecked()) return ;
     this->setCursor(Qt::WaitCursor);
     // Reduction de resolution
     if(value < 0){
@@ -2186,6 +2336,7 @@ void MainWindow::on_radioButton_temperature_clicked(){
 
 // Temperature
 void MainWindow::on_horizontalSlider_temperature_valueChanged(int value){
+    if(!ui->radioButton_temperature->isChecked()) return ;
     // S'il n'y a aucune modification
     if(value ==0){
         _imageResultat = _imageOriginale ;
@@ -2215,7 +2366,7 @@ void MainWindow::on_radioButton_vividite_clicked(){
         ui->horizontalSlider_teinte->setValue(0) ;
         ui->horizontalSlider_teinte->setEnabled(false) ;
 
-        if(VerifierImage(_imageOriginale, _imageOriginale) == false){
+        if(VerifierImage(_imageOriginale, _imageResultat) == false){
             // Activer le slider
             ui->horizontalSlider_vividite->setEnabled(true) ;
             ui->horizontalSlider_vividite->setValue(0) ;
@@ -2228,13 +2379,13 @@ void MainWindow::on_radioButton_vividite_clicked(){
 
 // Vividite
 void MainWindow::on_horizontalSlider_vividite_valueChanged(int value){
-    imwrite((QCoreApplication::applicationDirPath()+"/DATA/Images/imageTemp.jpg").toStdString(), _imageOriginale) ;
+    if(!ui->radioButton_vividite->isChecked()) return ;
     // S'il n'y a aucune modification
     if(value == 0){
         _imageResultat = _imageOriginale ;
     // S'il y a des changements
     }else{
-        _imageResultat = ImageVividite(imread((QCoreApplication::applicationDirPath()+"/DATA/Images/imageTemp.jpg").toStdString()), value) ;
+        _imageResultat = ImageVividite(_imageOriginale.clone(), value) ;
     }
     // Affichage du resultat
     AffichageResultat(_imageResultat, 1) ;
@@ -2269,6 +2420,7 @@ void MainWindow::on_radioButton_teinte_clicked(){
 
 // Teinte
 void MainWindow::on_horizontalSlider_teinte_valueChanged(int value){
+    if(!ui->radioButton_teinte->isChecked()) return ;
     // S'il n'y a aucune modification
     if(value != 0){
         _imageResultat = ImageTeinte(_imageOriginale, value) ;
@@ -2298,7 +2450,7 @@ void MainWindow::on_radioButton_saturation_clicked(){
         ui->horizontalSlider_vividite->setValue(0) ;
         ui->horizontalSlider_vividite->setEnabled(false) ;
 
-        if(VerifierImage(_imageOriginale, _imageOriginale) == false){
+        if(VerifierImage(_imageOriginale, _imageResultat) == false){
             // Activer le slider
             ui->horizontalSlider_saturation->setEnabled(true) ;
             ui->horizontalSlider_saturation->setValue(0) ;
@@ -2311,10 +2463,10 @@ void MainWindow::on_radioButton_saturation_clicked(){
 
 // Saturation
 void MainWindow::on_horizontalSlider_saturation_valueChanged(int value){
-    imwrite((QCoreApplication::applicationDirPath()+"/DATA/Images/imageTemp.jpg").toStdString(), _imageOriginale) ;
+    if(!ui->radioButton_saturation->isChecked()) return ;
     // S'il n'y a aucune modification
     if(value != 0){
-        _imageResultat = ImageSaturation(imread((QCoreApplication::applicationDirPath()+"/DATA/Images/imageTemp.jpg").toStdString()), value) ;
+        _imageResultat = ImageSaturation(_imageOriginale.clone(), value) ;
     // S'il y a des changements
     }else{
         _imageResultat = _imageOriginale ;
@@ -2425,6 +2577,38 @@ void MainWindow::on_pushButton_Appliquer_Hough_clicked(){
 
 // -------------Complements-------------
 
+// Attenuer ou restaurer les icones du groupBox Effets
+void MainWindow::DimmerIconesFiltres(bool actif){
+    // Icônes : opacité visuelle
+    QList<QLabel*> icones = {
+        ui->label_original, ui->label_mono, ui->label_sepia,
+        ui->label_negatif, ui->label_rouge, ui->label_vert,
+        ui->label_bleu, ui->label_jaune, ui->label_cyan,
+        ui->label_magenta, ui->label_rgb,
+        ui->labelBruitPoivreSel, ui->labelEgalisation
+    } ;
+    for(QLabel* lbl : icones){
+        if(actif){
+            lbl->setGraphicsEffect(nullptr) ;
+        }else{
+            QGraphicsOpacityEffect* eff = new QGraphicsOpacityEffect() ;
+            eff->setOpacity(0.22) ;
+            lbl->setGraphicsEffect(eff) ;
+        }
+    }
+    // RadioButtons : activation/désactivation explicite
+    QList<QRadioButton*> radios = {
+        ui->radioButton_originale, ui->radioButton_niveauGris, ui->radioButton_sepia,
+        ui->radioButton_inversement, ui->radioButton_rouge, ui->radioButton_vert,
+        ui->radioButton_bleu, ui->radioButton_rgb, ui->radioButton_cyan,
+        ui->radioButton_magenta, ui->radioButton_jaune,
+        ui->radioButtonEgalisation, ui->radioButtonBruitPoivreSel
+    } ;
+    for(QRadioButton* rb : radios){
+        rb->setEnabled(actif) ;
+    }
+}
+
 // Generer les icones
 void MainWindow::GenererIcone(){
     // Preparer les icones pour l'espace de travail
@@ -2508,36 +2692,61 @@ void MainWindow::GenererIcone(){
     ui->label_zoomImageOriginale->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter) ;
     ui->label_zoomImageTraitee->setPixmap(zoom.scaled(largeurZoom, hauteurZoom, Qt::IgnoreAspectRatio, Qt::SmoothTransformation)) ;
     ui->label_zoomImageTraitee->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter) ;
+    // Icones filtres : grisées par défaut (groupBox non coché)
+    DimmerIconesFiltres(false) ;
 }
 
 // Afficher l'image resultante apres un traitement avec inversement les canaux de couleur
 void MainWindow::AffichageResultat(const Mat image, const int choix){
-    // Declaration des variables
-    Mat imageAffichage = image ;
+    // Vérification : image non vide
+    if(image.empty()){
+        return ;
+    }
 
-    // Histogramme de l'image resultante
-    _histoImageResultat = Normalisation(PlotHistogram(imageAffichage), 255) ;
+    // ---- Histogramme de l'image resultante ----
+    _histoImageResultat = Normalisation(PlotHistogram(image), 255) ;
+    if(!_histoImageResultat.empty()){
+        QImage histoQImg((uchar*)_histoImageResultat.data,
+                         _histoImageResultat.cols,
+                         _histoImageResultat.rows,
+                         (int)_histoImageResultat.step,
+                         QImage::Format_RGB888) ;
+        ui->label_histogrammeImageTraitee->setPixmap(QPixmap::fromImage(histoQImg)) ;
+    }
 
-    // Echanger les composantes suivant la norme du QT
+    // ---- Preparation de l'image d'affichage ----
+    // Assurer 3 canaux (nécessaire pour Format_RGB888)
+    Mat imageAffichage ;
+    if(image.channels() == 1){
+        cvtColor(image, imageAffichage, COLOR_GRAY2BGR) ;
+    }else{
+        imageAffichage = image ;
+    }
+    // Convertir BGR → RGB pour Qt
     if(choix != 0){
         imageAffichage = ImageBGRRGB(imageAffichage) ;
     }
-    // Convertir en format QT
-    QImage imageResultatQT = QImage((uchar*) imageAffichage.data, imageAffichage.cols, imageAffichage.rows, imageAffichage.step, QImage::Format_RGB888) ;
-    QImage histoImageResultatQT = QImage((uchar*) _histoImageResultat.data, _histoImageResultat.cols, _histoImageResultat.rows, _histoImageResultat.step, QImage::Format_RGB888) ;
 
-    // Affichage : Image resultante
-    QGraphicsScene* scene = new QGraphicsScene() ;
-    scene->addPixmap(QPixmap::fromImage(imageResultatQT)) ;
-    ui->graphicsView_imageTraitee->setScene(scene) ;
-    ui->graphicsView_imageTraitee->show() ;
-    ui->graphicsView_imageTraitee->fitInView(scene->sceneRect(), Qt::KeepAspectRatio) ;
-    // Affichage : Histogramme
-    QPixmap histogrammeTraitee(QPixmap::fromImage(histoImageResultatQT)) ;
-    int hauteur = ui->label_histogrammeImageTraitee->height() ;       // Hauteur de la fenetre d'affichage
-    int largeur = ui->label_histogrammeImageTraitee->width() ;        // Largeur de la fenetre d'affichage
-    ui->label_histogrammeImageTraitee->setPixmap(histogrammeTraitee.scaled(largeur, hauteur, Qt::IgnoreAspectRatio, Qt::SmoothTransformation)) ;
-    ui->label_histogrammeImageTraitee->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter) ;
+    // ---- Affichage dans le QGraphicsView ----
+    // QImage pointe sur les données de la Mat (copie profonde lors de fromImage)
+    QImage qimg((uchar*)imageAffichage.data,
+                imageAffichage.cols,
+                imageAffichage.rows,
+                (int)imageAffichage.step,
+                QImage::Format_RGB888) ;
+    QPixmap pixmap = QPixmap::fromImage(qimg) ;
+
+    // Nouvelle scène à chaque appel (évite les problèmes de cache de rendu Qt)
+    QGraphicsScene* newScene = new QGraphicsScene() ;
+    newScene->addPixmap(pixmap) ;
+    ui->graphicsView_imageTraitee->setScene(newScene) ;
+    ui->graphicsView_imageTraitee->fitInView(newScene->sceneRect(), Qt::KeepAspectRatio) ;
+
+    // Supprimer l'ancienne scène traitée (sauf si c'est la scène originale partagée)
+    if(_sceneTraitee && _sceneTraitee != _sceneOriginale){
+        delete _sceneTraitee ;
+    }
+    _sceneTraitee = newScene ;
 }
 
 // Messages d'aide
@@ -2748,7 +2957,10 @@ void MainWindow::Reinitialiser(){
     ReinitialiserSeuillageSegmentation() ;  // Segmentation et seuillage
     ReinitialiserFiltre() ;                 // Effets
     ReinitialiserAutre() ;                  // Autres
-    AffichageResultat(_imageOriginale, 1) ;
+    // N'afficher que si une image est chargée
+    if(!_imageOriginale.empty()){
+        AffichageResultat(_imageOriginale, 1) ;
+    }
 }
 
 // Reinitialiser : Box Luminosite
@@ -2774,21 +2986,21 @@ void MainWindow::ReinitialiserLuminosite(){
 
 // Reinitialiser : Box Couleur
 void MainWindow::ReinitialiserCouleur(){
+    ui->radioButton_temperature->setChecked(false) ;
     ui->horizontalSlider_temperature->setValue(0) ;
     ui->horizontalSlider_temperature->setEnabled(false) ;
-    ui->radioButton_temperature->setChecked(false) ;
 
+    ui->radioButton_vividite->setChecked(false) ;
     ui->horizontalSlider_vividite->setValue(0) ;
     ui->horizontalSlider_vividite->setEnabled(false) ;
-    ui->radioButton_vividite->setChecked(false) ;
 
+    ui->radioButton_teinte->setChecked(false) ;
     ui->horizontalSlider_teinte->setValue(0) ;
     ui->horizontalSlider_teinte->setEnabled(false) ;
-    ui->radioButton_teinte->setChecked(false) ;
 
+    ui->radioButton_saturation->setChecked(false) ;
     ui->horizontalSlider_saturation->setValue(0) ;
     ui->horizontalSlider_saturation->setEnabled(false) ;
-    ui->radioButton_saturation->setChecked(false) ;
 
     ui->groupBox_couleur->setChecked(false) ;
 }
@@ -2891,6 +3103,16 @@ void MainWindow::ReinitialiserFiltre(){
     ui->radioButton_jaune->setChecked(false) ;
     ui->radioButtonEgalisation->setChecked(false) ;
     ui->radioButtonBruitPoivreSel->setChecked(false) ;
+    // Re-activer les frames couleur
+    ui->frame_bleu->setEnabled(true) ;
+    ui->frame_rouge->setEnabled(true) ;
+    ui->frame_vert->setEnabled(true) ;
+    ui->frame_pop->setEnabled(true) ;
+    ui->frame_jaune->setEnabled(true) ;
+    ui->frame_cyan->setEnabled(true) ;
+    ui->frame_magenta->setEnabled(true) ;
+    // Griser les icônes (groupBox inactif)
+    DimmerIconesFiltres(false) ;
     ui->groupBox_filtres->setChecked(false) ;
 }
 

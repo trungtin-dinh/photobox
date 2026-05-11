@@ -174,17 +174,13 @@ Mat ImageVividite(const Mat image, const int valeur){
     int val ;                                   // Valeur de calcul intermediaire
     Mat imageResultante ;                       // Image resultante
     Mat imageComposante[3] ;                    // Composantes de l'image originale
-    vector<int> vectVal(3) ;                    // Vecteur des valeurs a ajouter dans les composantes
-    vector<int> intervalle(3) ;                 // Intervalle d'intensite de l'histogramme des composantes
+    vector<int> vectVal(3, 0) ;                 // Vecteur des valeurs a ajouter dans les composantes
+    vector<int> intervalle ;                    // Intervalle d'intensite de l'histogramme des composantes
     vector<Mat> imageResultanteComposante ;     // Composante de l'image resultante
 
     // Initialisation
-    imageResultanteComposante.clear() ;
-    vectVal.clear() ;
-    intervalle.clear() ;
-    vectVal[0] = 0 ;
-    vectVal[1] = 0 ;
-    vectVal[2] = 0 ;
+    intervalle.reserve(3) ;
+    imageResultanteComposante.reserve(3) ;
 
     //  Decomposition des composantes de couleur
     split(image, imageComposante) ;
@@ -1644,46 +1640,16 @@ Mat InterpolationBilineaireMono(const Mat image, const int valeur){
 
 // Determiner la valeur minimum dans une matrice entiere
 int MinImage(const Mat image){
-    // Declaration des variables
-    int ligne, colonne ;    // Indices
-    int min ;               // Valeur min
-
-    // Initialisation
-    min = image.at<unsigned char>(0, 0) ;
-
-    // Chercher le minimum
-    for(ligne = 1 ; ligne < image.size().height ; ligne++){
-        for(colonne = 1 ; colonne < image.size().width ; colonne++){
-            if(min > image.at<unsigned char>(ligne, colonne)){
-                min = image.at<unsigned char>(ligne, colonne) ;
-            }
-        }
-    }
-
-    // Retour
-    return min ;
+    double minVal ;
+    cv::minMaxLoc(image, &minVal, nullptr) ;
+    return (int)minVal ;
 }
 
 // Determiner la valeur maximum dans une matrice entiere
 int MaxImage(const Mat image){
-    // Declaration des variables
-    int ligne, colonne ;    // Indices
-    int max ;               // Valeur max
-
-    // Initialisation
-    max = image.at<unsigned char>(0, 0) ;
-
-    // Chercher le maximum
-    for(ligne = 1 ; ligne < image.size().height ; ligne++){
-        for(colonne = 1 ; colonne < image.size().width ; colonne++){
-            if(max < image.at<unsigned char>(ligne, colonne)){
-                max = image.at<unsigned char>(ligne, colonne) ;
-            }
-        }
-    }
-
-    // Retour
-    return max ;
+    double maxVal ;
+    cv::minMaxLoc(image, nullptr, &maxVal) ;
+    return (int)maxVal ;
 }
 
 // Determiner la valeur minimum dans un vecteur reel
@@ -1777,11 +1743,11 @@ int MinVecteurIndice(const vector<int> vecteur){
     valeurMin = vecteur[0] ;
     indiceMin = 0 ;
 
-    // Chercher le maximum
+    // Chercher le minimum
     for(c = 1 ; c < (int)vecteur.size() ; c++){
-        if(valeurMin >= vecteur[c]){
+        if(vecteur[c] < valeurMin){
             valeurMin = vecteur[c] ;
-            indiceMin = 0 ;
+            indiceMin = c ;
         }
     }
 
@@ -1800,11 +1766,11 @@ int MinVecteurIndice(const vector<double> vecteur){
     valeurMin = vecteur[0] ;
     indiceMin = 0 ;
 
-    // Chercher le maximum
+    // Chercher le minimum
     for(c = 1 ; c < (int)vecteur.size() ; c++){
-        if(valeurMin >= vecteur[c]){
+        if(vecteur[c] < valeurMin){
             valeurMin = vecteur[c] ;
-            indiceMin = 0 ;
+            indiceMin = c ;
         }
     }
 
@@ -1869,22 +1835,7 @@ vector<int> Egalisation(const Mat image, const int nbIntervalle){
 
 // Generer une matrice zero
 Mat ImageZero(const int nbLigne, const int nbColonne){
-    // Declaration des variables
-    int ligne, colonne ;        // Indices
-    Size dimensionZero ;
-    dimensionZero.height = nbLigne ;
-    dimensionZero.width = nbColonne ;
-    Mat ImageZero = Mat(dimensionZero, CV_8U) ;
-
-    // Remplir la matrice
-    for(ligne = 0 ; ligne < nbLigne ; ligne++){
-        for (colonne = 0 ; colonne < nbColonne ; colonne++){
-            ImageZero.at<unsigned char>(ligne, colonne) = 0 ;
-        }
-    }
-
-    // Retour
-    return ImageZero ;
+    return Mat::zeros(nbLigne, nbColonne, CV_8U) ;
 }
 
 // Produit de convolution entre deux matrices
@@ -2068,50 +2019,23 @@ int MatriceMedian(const Mat matrice){
 
 // Determiner la valeur mediane d'un vecteur
 int VecteurMedian(vector<int> vecteur){
-    // Declaration des variables
-    int c ;                                 // Indice
-    vector<int> vecteurDecroissant ;        // Vecteur des valeurs rangees dans l'ordre decroissant
-
-    // Initialisation
-    vecteurDecroissant.clear() ;
-
-    // Ranger les valeurs du vecteur de depart dans l'ordre decroissant
-    while(vecteur.size()){
-        // Ecrire la valeur maximum du vecteur de depart
-        vecteurDecroissant.push_back(MaxVecteur(vecteur)) ;
-        for(c = 0 ; c < (int)vecteur.size() ; c++){
-            // Supprimer la valeur ecrite
-            if(MaxVecteur(vecteur) == vecteur[c]){
-                vecteur.erase(vecteur.begin() + c) ;
-            }
-        }
+    if(vecteur.empty()){
+        return 0 ;
     }
 
+    const size_t medianIndex = vecteur.size()/2 ;
+    nth_element(vecteur.begin(), vecteur.begin() + medianIndex, vecteur.end()) ;
+
     // Retour
-    return vecteurDecroissant[ceil((double)vecteurDecroissant.size()/2)] ;
+    return vecteur[medianIndex] ;
 }
 
 // Verifier l'egalite entre deux matrices de memes dimensions
 bool MatriceEgale(const Mat matrice1, const Mat matrice2){
-    // Declaration des variables
-    int ligne, colonne ;        // Indices
-    bool egal ;                 // Egalite entre deux matrices
-
-    // Verification de l'egalite de toutes les valeurs dans les deux matrices
-    for(ligne = 0 ; ligne < (int)matrice1.size().height ; ligne++){
-        for(colonne = 0 ; colonne < (int)matrice1.size().width ; colonne++){
-            if(matrice1.at<unsigned char>(ligne, colonne) == matrice2.at<unsigned char>(ligne, colonne)){
-                egal = true ;
-            }else{
-                egal = false ;
-                return egal ;
-                break ;
-            }
-        }
+    if(matrice1.size() != matrice2.size() || matrice1.type() != matrice2.type()){
+        return false ;
     }
-
-    // Retour
-    return egal ;
+    return cv::countNonZero(matrice1 != matrice2) == 0 ;
 }
 
 // Calculer la moyenne d'un vecteur
@@ -2592,23 +2516,19 @@ Mat PlotHistogram1D(Mat image,int choixCouleur) {
 
 // Image du graphe histogramme d'image 1 canals ou 3 canals
 Mat PlotHistogram(Mat image) {
-     Mat histogram_image_R(800, 1024, CV_8UC3, Scalar(0, 0, 0));
-     Mat histogram_image_G(800, 1024, CV_8UC3, Scalar(0, 0, 0));
-     Mat histogram_image_B(800, 1024, CV_8UC3, Scalar(0, 0, 0));
-     Mat histogram_image(800, 1024, CV_8UC3, Scalar(0, 0, 0));
-     Mat imageTemp;
-    if (VerifierImage(image,imageTemp)){
-        return PlotHistogram1D(imageTemp,0);
-    }else {
-        histogram_image_R = PlotHistogram1D(ImageExtractionCouleur(imageTemp,1),3) ;
-        histogram_image_G = PlotHistogram1D(ImageExtractionCouleur(imageTemp,2),2) ;
-        histogram_image_B = PlotHistogram1D(ImageExtractionCouleur(imageTemp,3),1) ;
-        addWeighted(histogram_image_B,0.5,
-        histogram_image_G,0.5,0.0,histogram_image);
-        addWeighted(histogram_image,0.5,
-        histogram_image_R,0.5,0.0,histogram_image);
+    Mat imageTemp ;
+    if (VerifierImage(image, imageTemp)){
+        return PlotHistogram1D(imageTemp, 0) ;
     }
-    return histogram_image;
+    // Image couleur : tracer un histogramme par canal (BGR)
+    // choix=1→Bleu, choix=2→Vert, choix=3→Rouge  /  couleur=1→bleu, 2→vert, 3→rouge
+    Mat histogram_image_R = PlotHistogram1D(ImageExtractionCouleur(imageTemp, 3), 3) ;
+    Mat histogram_image_G = PlotHistogram1D(ImageExtractionCouleur(imageTemp, 2), 2) ;
+    Mat histogram_image_B = PlotHistogram1D(ImageExtractionCouleur(imageTemp, 1), 1) ;
+    Mat histogram_image ;
+    addWeighted(histogram_image_B, 0.5, histogram_image_G, 0.5, 0.0, histogram_image) ;
+    addWeighted(histogram_image,   0.5, histogram_image_R, 0.5, 0.0, histogram_image) ;
+    return histogram_image ;
 }
 
 // Verifier si l'image est en couleurs ou en niveau de gris
@@ -2643,28 +2563,11 @@ bool VerifierImage(const Mat image, Mat& imageVerifiee){
 
 // Echanger les composantes R et B de l'image
 Mat ImageBGRRGB(const Mat image){
-    // Declaration des variables
-    int c ;                                     // Indice
-    int nbComposante = image.channels() ;       // Nombre de composantes de couleur
-    Mat imageResultante ;                       // Image resultante
-    Mat imageComposante[nbComposante] ;         // Des composantes de l'image originale
-    vector<Mat> imageResultanteComposante ;     // Des composantes de l'image resultante
-
-    // Initialisation
-    imageResultanteComposante.clear() ;
-
-    // Decomposition des composantes de couleur
-    split(image, imageComposante) ;
-
-    // Convolution sur chaque canal de couleur
-    for(c = 0 ; c < nbComposante ; c++){
-        imageResultanteComposante.push_back(imageComposante[nbComposante - 1 - c])  ;
+    if(image.channels() == 1){
+        return image.clone() ;
     }
-
-    // Fusion des composantes de couleur
-    merge(imageResultanteComposante, imageResultante) ;
-
-    // Retour
+    Mat imageResultante ;
+    cvtColor(image, imageResultante, COLOR_BGR2RGB) ;
     return imageResultante ;
 }
 
@@ -2736,16 +2639,15 @@ Mat TransformeedeHough(const Mat image,int num_theta,int threshold_acc){
     double edge_height_half, edge_width_half;
 
     double dtheta;
-    double *thetas;
     int theta_idx;
 
     double rho;
     int rho_idx;
+
+
     int Max_rho;
     int Maxrho_idx; //index maximal de rho
 
-    double* cos_theta;
-    double* sin_theta;
     double deg2rad;
     // défini le nombre de point pour discrétiser les rho et théta
     //int num_theta =180;
@@ -2758,10 +2660,10 @@ Mat TransformeedeHough(const Mat image,int num_theta,int threshold_acc){
 
     image.copyTo(imageHough);
 
-    //Allocation dynamique
-    cos_theta = new double[num_theta];
-    sin_theta = new double [num_theta];
-    thetas = new double [num_theta];
+    // Tables de sinus/cosinus pre-calculees
+    vector<double> cos_theta(num_theta) ;
+    vector<double> sin_theta(num_theta) ;
+    vector<double> thetas(num_theta) ;
 
     // Mettre l'image en niveau de gris
     gray_image = ImageMonochrome(image);
@@ -2795,8 +2697,8 @@ Mat TransformeedeHough(const Mat image,int num_theta,int threshold_acc){
     }
 
 
-    //Création de l'accumulateur and initialiser à ZEro
-    accumulateur = Mat::zeros(Maxrho_idx,num_theta,CV_8U);
+    // Creation de l'accumulateur. CV_32S evite les saturations a 255 votes.
+    accumulateur = Mat::zeros(Maxrho_idx,num_theta,CV_32S);
 
     // Calcul dans l'espace de Hough
     for (ligne = 0;ligne < edge_height; ligne ++){
@@ -2811,7 +2713,7 @@ Mat TransformeedeHough(const Mat image,int num_theta,int threshold_acc){
                     rho_idx = round(rho)+Max_rho;
                     //cout << "valeur de rho" << rho<< "valeur de lindex "<< rho_idx<< endl;
                     //cout << index_Rho << endl;
-                    accumulateur.at<unsigned char>(rho_idx,theta_idx)++;
+                    accumulateur.at<int>(rho_idx,theta_idx)++;
 
                 }
             }
@@ -2822,7 +2724,7 @@ Mat TransformeedeHough(const Mat image,int num_theta,int threshold_acc){
     //Tracage ds droite détecter à partir de l'accumulateur
     for (ligne = 0;ligne < accumulateur.rows; ligne ++){
         for(colonne = 0; colonne < accumulateur.cols; colonne ++){
-            if(accumulateur.at<unsigned char>(ligne,colonne) > (threshold_acc)){
+            if(accumulateur.at<int>(ligne,colonne) > (threshold_acc)){
 
                 //y = (r - x cos(t)) / sin(t)
                 if(thetas[colonne] >= 45 && thetas[colonne] <= 135){
@@ -2849,11 +2751,6 @@ Mat TransformeedeHough(const Mat image,int num_theta,int threshold_acc){
         }
 
     }
-
-    //liberation de la mémoire
-    delete[] cos_theta;
-    delete[] sin_theta;
-    delete[] thetas;
 
     //cout << accumulateur << endl;
 

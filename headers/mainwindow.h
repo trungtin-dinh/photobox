@@ -802,6 +802,20 @@ private:
      */
     vector<int> _seuilHaut;         
 
+    /**
+     * @brief Atténue ou restaure les icônes du groupBox Effets pour indiquer l'état actif/inactif
+     */
+    void DimmerIconesFiltres(bool actif) ;
+
+    /**
+     * @brief Scène persistante pour graphicsView_imageOriginale (évite les fuites mémoire)
+     */
+    QGraphicsScene* _sceneOriginale ;
+    /**
+     * @brief Scène persistante pour graphicsView_imageTraitee (évite les fuites mémoire)
+     */
+    QGraphicsScene* _sceneTraitee ;         
+
 
 
 

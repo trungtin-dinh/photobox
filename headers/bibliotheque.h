@@ -10,7 +10,10 @@
 #pragma once
 
 // Systeme
+#include <algorithm>
 #include <fstream>
+#include <numeric>
+#include <vector>
 
 // Json
 #include <jsoncpp/json/value.h>
@@ -57,13 +60,13 @@ class Bibliotheque{
          * 
          * @param nomBibliotheque string
          */
-        Bibliotheque(string nomBibliotheque) ;
+        Bibliotheque(const string& nomBibliotheque) ;
         /**
          * @brief Construire un nouveau objet Bibliotheque avec un objet Json
          * 
          * @param jsonBibliotheque Json::Value
          */
-        Bibliotheque(const Json::Value jsonBibliotheque) ;     
+        Bibliotheque(const Json::Value& jsonBibliotheque) ;     
 
         /*Getters*/
         /**
@@ -71,26 +74,26 @@ class Bibliotheque{
          * 
          * @return  Json::Value : l'objet Json de la Bibliotheque
          */
-        Json::Value getBilbiotheque() const ;
+        const Json::Value& getBilbiotheque() const ;
         /**
          * @brief Obtenir le chemin du fichier .json de la Bibliotheque.
          * 
          * @return string : une chaine de charactere contenant le chemin du fichier .json de la Bibliotheque.
          */
-        string getCheminJson() const;
+        const string& getCheminJson() const;
         /*Setters*/
         /**
          * @brief Affecter l'objet Json de la Bilbiotheque.
          * 
          * @param jsonBibliotheque Json::Value
          */
-        void setBilbiotheque(const Json::Value jsonBibliotheque) ;
+        void setBilbiotheque(const Json::Value& jsonBibliotheque) ;
         /**
          * @brief Affecter le chemin du fichier .json de la Bibliotheque.
          * 
          * @param cheminJson string 
          */
-        void setCheminJson(const string cheminJson) ;
+        void setCheminJson(const string& cheminJson) ;
 
         /*Methodes*/
         /**
