@@ -2501,7 +2501,6 @@ void MainWindow::on_groupBox_autre_clicked(){
 void MainWindow::on_radioButton_fourier_clicked(){
     if(ui->radioButton_fourier->isChecked()){
         // Desactiver les autres fonctionnalites
-
         ui->radioButtonTransformeeHough->setChecked(false) ;
         ui->spinBoxHough->setEnabled(false) ;
         ui->spinBoxHough->setValue(0) ;
@@ -2512,22 +2511,17 @@ void MainWindow::on_radioButton_fourier_clicked(){
         ui->spinBoxKmeans->setEnabled(false) ;
         ui->spinBoxKmeans->setValue(0) ;
 
-        QMessageBox::information(0, "Transformée de Fourier", "Cette fonctionnalité va arriver bientôt dans la version suivante.") ;
-
-        /*
-        this->setCursor(Qt::WaitCursor);
-        if(ui->radioButton_fourier->isChecked()){
-            _imageResultat = ImageFourier(_imageOriginale) ;
-            AffichageResultat(_imageResultat,1);
-        }
-        this->setCursor(Qt::ArrowCursor);*/
+        // Calcul du module du spectre de Fourier 2D
+        this->setCursor(Qt::WaitCursor) ;
+        _imageResultat = ImageFourier(_imageOriginale) ;
+        AffichageResultat(_imageResultat, 1) ;
+        this->setCursor(Qt::ArrowCursor) ;
     }
 }
 
 // K-means
 void MainWindow::on_radioButtonKmeans_clicked(){
     if(ui->radioButtonKmeans->isChecked()){
-        QMessageBox::information(0, "Segmentation par K-means", "Cette fonctionnalité va arriver bientôt dans la version suivante.") ;
         // Desactiver les autres fonctionnalites
         ui->radioButtonTransformeeHough->setChecked(false) ;
         ui->spinBoxHough->setEnabled(false) ;
@@ -2536,9 +2530,12 @@ void MainWindow::on_radioButtonKmeans_clicked(){
         ui->spinBoxHough_seuil_theta->setValue(0) ;
 
         ui->radioButton_fourier->setChecked(false) ;
-        // Initialiser le critere
+
+        // Initialiser le nombre de classes (K=2 par défaut)
         ui->spinBoxKmeans->setEnabled(true) ;
-        ui->spinBoxKmeans->setValue(0) ;
+        ui->spinBoxKmeans->setValue(2) ;
+        // Afficher l'image originale en attendant que l'utilisateur valide avec OK
+        AffichageResultat(_imageOriginale, 1) ;
     }
 }
 
@@ -2565,14 +2562,20 @@ void MainWindow::on_radioButtonTransformeeHough_clicked(){
     }
 }
 
-// Transformee de Hough
+// Bouton OK : Transformee de Hough ou K-means
 void MainWindow::on_pushButton_Appliquer_Hough_clicked(){
-    this->setCursor(Qt::WaitCursor);
+    this->setCursor(Qt::WaitCursor) ;
     if(ui->radioButtonTransformeeHough->isChecked()){
         _imageResultat = TransformeedeHough(_imageOriginale, ui->spinBoxHough_seuil_theta->value(), ui->spinBoxHough->value()) ;
-        AffichageResultat(_imageResultat,1);
+        AffichageResultat(_imageResultat, 1) ;
+    }else if(ui->radioButtonKmeans->isChecked()){
+        int k = ui->spinBoxKmeans->value() ;
+        if(k >= 2){
+            _imageResultat = ImageKMeans(_imageOriginale, k) ;
+            AffichageResultat(_imageResultat, 1) ;
+        }
     }
-    this->setCursor(Qt::ArrowCursor);
+    this->setCursor(Qt::ArrowCursor) ;
 }
 
 // -------------Complements-------------

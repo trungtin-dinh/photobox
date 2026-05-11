@@ -672,4 +672,12 @@ namespace ImageToolBox {
      * @return une image avec les lignes detectees et tracees
      */
     Mat TransformeedeHough(const Mat image,int num_theta,int threshold_acc); // Détection de ligne dans une images
+
+    /**
+     * @brief Segmenter l'image par la méthode K-means
+     * @param image Image de départ (BGR ou niveaux de gris)
+     * @param k Nombre de classes (clusters), k >= 2
+     * @return Image segmentée : chaque pixel est remplacé par la couleur moyenne de son cluster
+     */
+    Mat ImageKMeans(const Mat image, const int k) ;
 };

@@ -2077,32 +2077,58 @@ double VarianceVecteur(const vector<double> vecteur){
 }
 
 // Transformee de Fourier 2D de l'image (module)
+// Transformée de Fourier 2D — module du spectre, centré, échelle log
 Mat ImageFourier(const Mat image){
-    // Declaration des variables
-    int ligne, colonne ;                            // Indices
-    int val ;                                       // Valeur de calcul intermediaire
-    //complex<double> temp ;
-    Mat imageMono = ImageMonochrome(image) ;        // Convertir l'image originale en niveau de gris
-    Mat imageFourier(image.size(), CV_8U) ;         // Image du module de la transformee de Fourier
+    // 1. Conversion en niveaux de gris (CV_8U)
+    Mat imageMono = ImageMonochrome(image) ;
 
+    // 2. Taille optimale pour la FFT (puissance de 2) → zero-padding
+    int M = cv::getOptimalDFTSize(imageMono.rows) ;
+    int N = cv::getOptimalDFTSize(imageMono.cols) ;
+    Mat padded ;
+    cv::copyMakeBorder(imageMono, padded,
+                       0, M - imageMono.rows,
+                       0, N - imageMono.cols,
+                       cv::BORDER_CONSTANT, cv::Scalar::all(0)) ;
 
-    for(ligne = 0 ; ligne < (int)image.size().height ; ligne++){
-        for(colonne = 0 ; colonne < (int)image.size().width ; colonne++){
-            val = (int)ImageFourierElement(imageMono, ligne, colonne) ;
-            // Verifier la saturation
-            if(val > 255){
-                val = 255 ;
-            }else if(val < 0){
-                val = 0 ;
-            }
-            imageFourier.at<unsigned char>(ligne, colonne) = val ;
-        }
-    }
-    //dft(imageMono, temp, DFT_COMPLEX_OUTPUT) ;
-    //magnitude(temp.real(), temp.imag(), imageFourier) ;
+    // 3. Construire l'entrée complexe [partie réelle | partie imaginaire = 0]
+    Mat planes[2] = { Mat_<float>(padded), Mat::zeros(padded.size(), CV_32F) } ;
+    Mat complexImg ;
+    cv::merge(planes, 2, complexImg) ;
 
-    // Retour
-    return imageFourier ;
+    // 4. DFT
+    cv::dft(complexImg, complexImg) ;
+
+    // 5. Module : |F(u,v)| = sqrt(Re² + Im²)
+    cv::split(complexImg, planes) ;
+    cv::magnitude(planes[0], planes[1], planes[0]) ;
+    Mat mag = planes[0] ;
+
+    // 6. Échelle logarithmique : log(1 + |F|) pour compresser la dynamique
+    mag += cv::Scalar::all(1.0) ;
+    cv::log(mag, mag) ;
+
+    // 7. Recadrage à la taille originale (supprimer le zero-padding)
+    mag = mag(cv::Rect(0, 0, imageMono.cols, imageMono.rows)).clone() ;
+
+    // 8. Normalisation en [0, 255]
+    cv::normalize(mag, mag, 0, 255, cv::NORM_MINMAX) ;
+    Mat magU8 ;
+    mag.convertTo(magU8, CV_8U) ;
+
+    // 9. Centrage du spectre (fftshift) : la composante DC passe au centre
+    int cx = magU8.cols / 2 ;
+    int cy = magU8.rows / 2 ;
+    Mat q0(magU8, cv::Rect(0,  0,  cx,              cy)) ;
+    Mat q1(magU8, cv::Rect(cx, 0,  magU8.cols - cx, cy)) ;
+    Mat q2(magU8, cv::Rect(0,  cy, cx,              magU8.rows - cy)) ;
+    Mat q3(magU8, cv::Rect(cx, cy, magU8.cols - cx, magU8.rows - cy)) ;
+    Mat tmp ;
+    q0.copyTo(tmp) ; q3.copyTo(q0) ; tmp.copyTo(q3) ;
+    q1.copyTo(tmp) ; q2.copyTo(q1) ; tmp.copyTo(q2) ;
+
+    // 10. Retour en 3 canaux (requis par AffichageResultat)
+    return MonoCouleur(magU8) ;
 }
 
 // Element de calcul de la transformee de Fourier 2D de l'image (module)
@@ -2126,6 +2152,47 @@ double ImageFourierElement(const Mat image, const int ligne, const int colonne){
 
     // Retour
     return abs(resultat) ;
+}
+
+// Segmentation K-means
+// Chaque pixel est remplacé par la couleur moyenne (centroïde) de son cluster.
+// L'algorithme minimise la variance intra-classe :
+//   argmin_{C_k} Σ_k Σ_{x∈C_k} ||x − μ_k||²
+// où μ_k est le centroïde du cluster k et x est le vecteur de couleur d'un pixel.
+// Initialisation KMeans++ : le premier centroïde est tiré aléatoirement,
+// chaque centroïde suivant est choisi avec probabilité proportionnelle à D²(x),
+// la distance carrée au centroïde le plus proche déjà choisi.
+Mat ImageKMeans(const Mat image, const int k){
+    if(k < 2 || image.empty()) return image ;
+
+    // Reshape : (H×W) lignes × C colonnes, en float (requis par cv::kmeans)
+    Mat data ;
+    image.convertTo(data, CV_32F) ;
+    data = data.reshape(1, data.rows * data.cols) ;  // (H*W) × nbCanaux
+
+    // Segmentation K-means
+    Mat labels, centers ;
+    cv::TermCriteria criteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 100, 0.2) ;
+    cv::kmeans(data, k, labels, criteria, 5, cv::KMEANS_PP_CENTERS, centers) ;
+
+    // Reconstruction : chaque pixel ← couleur du centroïde de son cluster
+    centers.convertTo(centers, CV_8U) ;
+    Mat result(image.size(), image.type()) ;
+    int nC = image.channels() ;
+    for(int i = 0 ; i < (int)data.rows ; i++){
+        int row   = i / image.cols ;
+        int col   = i % image.cols ;
+        int label = labels.at<int>(i) ;
+        if(nC == 3){
+            result.at<Vec3b>(row, col) = Vec3b(
+                centers.at<uchar>(label, 0),
+                centers.at<uchar>(label, 1),
+                centers.at<uchar>(label, 2)) ;
+        }else{
+            result.at<uchar>(row, col) = centers.at<uchar>(label, 0) ;
+        }
+    }
+    return result ;
 }
 
 //////////////////// Autres ////////////////////
