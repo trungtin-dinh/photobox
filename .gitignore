@@ -21,3 +21,5 @@ Photobox-release/
 *.bak
 *.bak2
 DATA/Images/imageTemp.jpg
+*.pro.user
+*.pro.user.*
