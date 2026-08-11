@@ -1,3 +1,5 @@
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/trungtin-dinh/photobox)
+
 # Photobox
 
 Photobox is a Qt/C++ desktop application for experimenting with classical image processing operations through a graphical interface.
